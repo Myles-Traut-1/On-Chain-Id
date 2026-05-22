@@ -4,14 +4,14 @@ import { usePublicClient, useAccount } from "wagmi";
 import { IdentitySDK } from "@onchain-id/identity-sdk";
 import { useState } from "react";
 import { useEthersSigner } from "./useEthersSigner";
-import { useGetIdentity } from "./useGetIdentity";
+import { useIdentity } from "./useIdentity";
 import { constants } from "../constants";
 
 export function useDeployIdentity() {
     const publicClient = usePublicClient();
     const { address } = useAccount();
     const signer = useEthersSigner();
-    const { getIdentity } = useGetIdentity(address);
+    const { refetch: refetchIdentity } = useIdentity(address);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
@@ -34,7 +34,7 @@ export function useDeployIdentity() {
 
             await tx.wait();
 
-            const identityAddr = await getIdentity();
+            const identityAddr = await refetchIdentity();
             return identityAddr as `0x${string}`;
         }
 
