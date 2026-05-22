@@ -1,18 +1,13 @@
 'use client';
 
 import { useDeployIdentity } from "../hooks/useDeployIdentity";
-import { IdentitySDK } from "@onchain-id/identity-sdk";
 import { useAccount } from "wagmi";
-import { useEffect, useMemo, useState } from "react";
-import { constants } from "../constants";
-import { ethers } from "ethers";
+import { useState } from "react";
 
 export default function DeployId() {
-    const { address, isConnected } = useAccount();
+    const { isConnected } = useAccount();
     const { deployIdentity, loading, error } = useDeployIdentity();
     const [deployedAddress, setDeployedAddress] = useState<`0x${string}` | null>(null);
-    const [expectedAddress, setExpectedAddress] = useState<`0x${string}` | null>(null);
-
 
     const handleDeployIdentity = async () => {
         try {
