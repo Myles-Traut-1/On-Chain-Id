@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "anvil": "source .env && anvil --fork-url $SEPOLIA_URL --chain-id 31337",
+    "anvil:fund": "source .env && cast rpc anvil_setBalance $ANVIL_ACCOUNT_1 $(cast to-wei 10 ether) --rpc-url $ANVIL_URL"
   },
   "dependencies": {
     "@onchain-id/identity-sdk": "^1.7.1",
@@ -24,6 +26,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",

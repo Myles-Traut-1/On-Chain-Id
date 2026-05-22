@@ -1,18 +1,23 @@
 'use client';
 
 import { useDeployIdentity } from "../hooks/useDeployIdentity";
+import { IdentitySDK } from "@onchain-id/identity-sdk";
 import { useAccount } from "wagmi";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { constants } from "../constants";
+import { ethers } from "ethers";
 
 export default function DeployId() {
     const { address, isConnected } = useAccount();
     const { deployIdentity, loading, error } = useDeployIdentity();
     const [deployedAddress, setDeployedAddress] = useState<`0x${string}` | null>(null);
+    const [expectedAddress, setExpectedAddress] = useState<`0x${string}` | null>(null);
+
 
     const handleDeployIdentity = async () => {
         try {
-            const deployedIdAddress = await deployIdentity();
-            setDeployedAddress(deployedIdAddress);
+            const deployedAddress = await deployIdentity();
+            setDeployedAddress(deployedAddress as `0x${string}`);
         }
         catch (err) {
             console.error('Failed To Deploy Identity:', err);
@@ -24,7 +29,7 @@ export default function DeployId() {
             {deployedAddress ? (
                 <div>
                     <p className="mb-2">Identity Deployed Successfully!</p>
-                    <p className="text-sm text-gray-600">Deployed Address: {deployedAddress}</p>
+                    <p className="text-sm text-white">Deployed Address: {deployedAddress}</p>
                 </div>
             ) : (
                 <button
