@@ -1,23 +1,46 @@
 'use client';
 
 import { usePublicClient, useWalletClient, useAccount } from "wagmi";
-import { IdentitySDK } from "@onchain-id/identity-sdk";
-import { ethers } from "ethers";
-import { useState } from "react";
+import { Identity, IdentitySDK } from "@onchain-id/identity-sdk";
+import { ethers, providers } from 'ethers'
+import { useState, useMemo } from "react";
+import type { Account, Chain, Client, Transport } from 'viem'
+import { type Config, useConnectorClient, useWatchContractEvent } from 'wagmi'
 
-import { constants } from "../constants";
+import { constants, factoryAbi } from "../constants";
+
+export function clientToSigner(client: Client<Transport, Chain, Account>) {
+    const { account, chain, transport } = client
+    const network = {
+        chainId: chain.id,
+        name: chain.name,
+        ensAddress: chain.contracts?.ensRegistry?.address,
+    }
+    const provider = new providers.Web3Provider(transport, network)
+    const signer = provider.getSigner(account.address)
+    return signer
+}
+
+export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
+    const { data: client } = useConnectorClient<Config>({ chainId })
+    return useMemo(() => (client ? clientToSigner(client) : undefined), [client])
+}
 
 
 export function useDeployIdentity() {
     const publicClient = usePublicClient();
     const { data: walletClient } = useWalletClient();
     const { address } = useAccount();
+    const signer = useEthersSigner();
 
     const [loading, setLoading] = useState(false);
+    const [deployedAddress, setDeployedAddress] = useState<`0x${string}` | null>(null);
     const [error, setError] = useState<Error | null>(null);
 
     const deployIdentity = async () => {
-        if (!publicClient || !walletClient || !address) {
+        const provider = signer?.provider;
+
+        if (!publicClient || !walletClient || !address || !provider) {
             throw new Error("Wallet not connected");
         }
 
@@ -25,53 +48,22 @@ export function useDeployIdentity() {
             setLoading(true);
             setError(null);
 
-            // Create a combined provider that uses wallet for writes and public client for reads
-            const combinedProvider: any = {
-                request: async (args: { method: string; params?: any[] }) => {
-                    // Use wallet client for write operations
-                    if (
-                        args.method === 'eth_sendTransaction' ||
-                        args.method === 'eth_signTransaction' ||
-                        args.method === 'personal_sign' ||
-                        args.method === 'eth_sign'
-                    ) {
-                        return (walletClient as any).request({
-                            method: args.method,
-                            params: args.params ?? [],
-                        });
-                    }
-                    // Use public client for read operations
-                    return (publicClient as any).request({
-                        method: args.method,
-                        params: args.params ?? [],
-                    });
-                },
-            };
+            const tx = await IdentitySDK.Identity.deployUsingGatewayForWallet({
+                gateway: constants.gateway,
+                identityOwner: address,
+            }, { signer });
 
-            // Create ethers provider
-            const provider = new ethers.providers.Web3Provider(
-                combinedProvider,
-                {
-                    chainId: publicClient.chain.id,
-                    name: publicClient.chain.name,
-                }
-            );
+            await tx.wait();
 
-            const signer = provider.getSigner(address);
+            const identityAddr = await publicClient.readContract({
+                address: constants.idFactory,
+                abi: factoryAbi,
+                functionName: 'getIdentity', // Or whatever method your factory has
+                args: [address],
+            });
 
-            // Deploy identity
-            const identity = await IdentitySDK.Identity.deployNew(
-                {
-                    managementKey: address,
-                    implementationAuthority: constants.implementationAuthority,
-                },
-                { signer }
-            );
-
-            await identity.deployed();
-
-            return identity.address as `0x${string}`;
-
+            setDeployedAddress(identityAddr as `0x${string}`);
+            return identityAddr as `0x${string}`;
         }
         catch (err) {
             const error = err instanceof Error ? err : new Error('Deployment failed');
