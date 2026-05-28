@@ -3,6 +3,7 @@
 import { useDeployIdentity } from "../hooks/useDeployIdentity";
 import { useAccount } from "wagmi";
 import { useState } from "react";
+import ErrorAlert from "./ErrorAlert";
 
 type DeployIdProps = {
     onDeployed?: () => Promise<unknown> | void;
@@ -13,8 +14,10 @@ export default function DeployId({ onDeployed }: DeployIdProps) {
     const { deployIdentity, loading, error } = useDeployIdentity();
 
     const [isHovered, setIsHovered] = useState(false);
+    const [dismissedError, setDismissedError] = useState(false);
 
     const handleDeployIdentity = async () => {
+        setDismissedError(false);
         try {
             await deployIdentity();
             await onDeployed?.();
@@ -47,13 +50,12 @@ export default function DeployId({ onDeployed }: DeployIdProps) {
                     </div>
 
                     {/* Error message */}
-                    {error && (
-                        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-2xl p-4">
-                            <p className="text-sm text-red-800 dark:text-red-200">
-                                <span className="font-semibold">Error: </span>
-                                {error.message}
-                            </p>
-                        </div>
+                    {error && !dismissedError && (
+                        <ErrorAlert
+                            error={error}
+                            onDismiss={() => setDismissedError(true)}
+                            showDetails={false}
+                        />
                     )}
 
                     {/* Button */}

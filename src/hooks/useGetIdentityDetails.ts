@@ -3,13 +3,15 @@
 import { ethers } from "ethers";
 import { useEthersProvider } from "./useEthers";
 import { useEffect, useState } from "react";
+import { useErrorHandler } from "./useErrorHandler";
 
 import { Identity, IdentitySDK } from "@onchain-id/identity-sdk";
 
 export function useGetIdentityDetails(userAddress?: string, idAddress?: string) {
     const [keys, setKeys] = useState([] as any[]);
     const [verified, setVerified] = useState(false);
-
+    const [loading, setLoading] = useState(false);
+    const { error, handleError, clearError } = useErrorHandler();
     const provider = useEthersProvider();
 
     const verifyIdentity = (keys: any[], hashedAddress: string): boolean => {
@@ -24,37 +26,44 @@ export function useGetIdentityDetails(userAddress?: string, idAddress?: string) 
 
     useEffect(() => {
         const getIdentityDetails = async () => {
-            if (!provider || !idAddress || !userAddress) {
+            if (!provider || !idAddress || !userAddress || idAddress === ethers.constants.AddressZero) {
                 setKeys([]);
                 setVerified(false);
                 return null;
             };
 
-            if (idAddress === ethers.constants.AddressZero) {
-                console.log("No identity found for this address.");
+            try {
+                clearError();
+                setLoading(true);
+
+                const identity = await Identity.at(idAddress, { provider });
+
+                const keys = await identity.getKeysByPurpose(
+                    IdentitySDK.utils.enums.KeyPurpose.MANAGEMENT
+                );
+
+                const hashedAddress = IdentitySDK.utils.encodeAndHash(["address"], [userAddress]);
+
+                const isManager: boolean = verifyIdentity(keys, hashedAddress);
+
+                setKeys(keys);
+                console.log("Identity Keys:", keys);
+                setVerified(isManager);
+            } catch (err) {
+                handleError(err);
                 setKeys([]);
                 setVerified(false);
-                return null;
+                throw err;
+            } finally {
+                setLoading(false);
             }
 
-            const identity = await Identity.at(idAddress, { provider });
 
-            const keys = await identity.getKeysByPurpose(
-                IdentitySDK.utils.enums.KeyPurpose.MANAGEMENT
-            );
-
-            const hashedAddress = IdentitySDK.utils.encodeAndHash(["address"], [userAddress]);
-
-            const isManager: boolean = verifyIdentity(keys, hashedAddress);
-
-            setKeys(keys);
-            console.log("Identity Keys:", keys);
-            setVerified(isManager);
         }
 
         getIdentityDetails();
 
     }, [provider, idAddress, userAddress]);
 
-    return { keys, verified };
+    return { keys, verified, loading, error };
 }

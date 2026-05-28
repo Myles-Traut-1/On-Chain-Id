@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useEthersSigner } from "./useEthers";
 import { useIdentity } from "./useIdentity";
 import { constants } from "../constants";
+import { useErrorHandler } from "./useErrorHandler";
+
 
 export function useDeployIdentity() {
     const publicClient = usePublicClient();
@@ -14,18 +16,20 @@ export function useDeployIdentity() {
     const { refetch: refetchIdentity } = useIdentity(address);
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<Error | null>(null);
+    const { error, handleError, clearError } = useErrorHandler();
 
     const deployIdentity = async () => {
         const provider = signer?.provider;
 
         if (!publicClient || !address || !provider) {
-            throw new Error("Wallet not connected");
+            const err = new Error("Wallet not connected");
+            handleError(err);
+            throw err;
         }
 
         try {
             setLoading(true);
-            setError(null);
+            clearError();
 
             const tx = await IdentitySDK.Identity.deployUsingGatewayForWallet({
                 gateway: constants.gateway,
@@ -39,9 +43,8 @@ export function useDeployIdentity() {
         }
 
         catch (err) {
-            const error = err instanceof Error ? err : new Error('Deployment failed');
-            setError(error);
-            throw error;
+            handleError(err);
+            throw err;
 
         } finally {
             setLoading(false);
