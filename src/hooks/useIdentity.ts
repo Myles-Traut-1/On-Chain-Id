@@ -43,7 +43,6 @@ export function useIdentity(address?: string) {
         }
     }, [publicClient, address]);
 
-    // Auto-fetch on address/publicClient change
     useEffect(() => {
         fetchIdentity();
     }, [fetchIdentity]);
