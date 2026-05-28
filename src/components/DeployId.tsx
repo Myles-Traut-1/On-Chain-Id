@@ -9,7 +9,7 @@ type DeployIdProps = {
 };
 
 export default function DeployId({ onDeployed }: DeployIdProps) {
-    const { isConnected } = useAccount();
+    const { isConnected, chain } = useAccount();
     const { deployIdentity, loading, error } = useDeployIdentity();
 
     const [isHovered, setIsHovered] = useState(false);
@@ -86,7 +86,7 @@ export default function DeployId({ onDeployed }: DeployIdProps) {
                     <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                         <div className="bg-indigo-50 dark:bg-indigo-950 rounded-xl p-3 border border-indigo-200 dark:border-indigo-800">
                             <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider">Network</p>
-                            <p className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mt-1">Sepolia</p>
+                            <p className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mt-1">{chain ? chain.name : "Unknown"}</p>
                         </div>
                         <div className="bg-cyan-50 dark:bg-cyan-900 rounded-xl p-3 border border-cyan-200 dark:border-cyan-800">
                             <p className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider">Type</p>

@@ -1,8 +1,11 @@
-import { IdentitySDK } from "@onchain-id/identity-sdk";
+'use client';
+import { useAccount } from "wagmi";
 
 export default function IdCard(
     { identity, keys, verified }: { identity: string, keys: { key: string, type: string, purposes: string[] }[], verified: boolean }
 ) {
+    const { chain } = useAccount();
+
     return (
         <div className="flex justify-center">
             <div className="w-full overflow-x-auto">
@@ -82,7 +85,7 @@ export default function IdCard(
                                             Network
                                         </p>
                                         <p className="text-lg font-bold text-cyan-900 dark:text-cyan-100">
-                                            Sepolia
+                                            {chain ? chain.name : "Unknown"}
                                         </p>
                                     </div>
                                 </div>
