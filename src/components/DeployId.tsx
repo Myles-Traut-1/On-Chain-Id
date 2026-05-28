@@ -1,47 +1,124 @@
 'use client';
 
 import { useDeployIdentity } from "../hooks/useDeployIdentity";
-import { IdentitySDK } from "@onchain-id/identity-sdk";
 import { useAccount } from "wagmi";
-import { useEffect, useMemo, useState } from "react";
-import { constants } from "../constants";
-import { ethers } from "ethers";
+import { useState } from "react";
 
 export default function DeployId() {
-    const { address, isConnected } = useAccount();
+    const { isConnected } = useAccount();
     const { deployIdentity, loading, error } = useDeployIdentity();
     const [deployedAddress, setDeployedAddress] = useState<`0x${string}` | null>(null);
-    const [expectedAddress, setExpectedAddress] = useState<`0x${string}` | null>(null);
-
+    const [isHovered, setIsHovered] = useState(false);
 
     const handleDeployIdentity = async () => {
         try {
             const deployedAddress = await deployIdentity();
             setDeployedAddress(deployedAddress as `0x${string}`);
-        }
-        catch (err) {
+        } catch (err) {
             console.error('Failed To Deploy Identity:', err);
         }
+    };
+
+    if (deployedAddress) {
+        return (
+            <div className="relative group">
+                <div className="absolute inset-0 bg-emerald-400 rounded-3xl blur-xl opacity-20 transition-opacity duration-300" />
+                <div className="relative bg-emerald-50 dark:bg-emerald-950 rounded-3xl p-8 sm:p-10 border-2 border-emerald-200 dark:border-emerald-800 shadow-xl">
+                    <div className="space-y-4 text-center">
+                        <div className="w-14 h-14 mx-auto bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
+                            <span className="text-2xl">✨</span>
+                        </div>
+                        <div>
+                            <p className="text-emerald-700 dark:text-emerald-300 font-semibold text-lg mb-2">
+                                Identity Deployed Successfully!
+                            </p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                                Your on-chain identity is now ready to use.
+                            </p>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 break-all">
+                            <code className="text-xs sm:text-sm font-mono text-cyan-600 dark:text-cyan-400">
+                                {deployedAddress}
+                            </code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="p-4 border rounded">
-            {deployedAddress ? (
-                <div>
-                    <p className="mb-2">Identity Deployed Successfully!</p>
-                    <p className="text-sm text-white">Deployed Address: {deployedAddress}</p>
-                </div>
-            ) : (
-                <button
-                    onClick={handleDeployIdentity}
-                    disabled={!isConnected || loading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400"
-                >
-                    {loading ? "Deploying..." : "Deploy Identity"}
-                </button>
-            )}
-            {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
-        </div>
-    )
-}
+        <div className="relative group" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+            <div className={`absolute inset-0 bg-indigo-400 rounded-3xl blur-xl transition-opacity duration-300 ${isHovered ? 'opacity-40' : 'opacity-20'}`} />
+            <div className="relative bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-12 border-2 border-indigo-200 dark:border-indigo-800 shadow-xl overflow-hidden">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-200 dark:bg-indigo-900 rounded-full blur-3xl opacity-20 -mr-20 -mt-20" />
 
+                <div className="relative space-y-8">
+                    {/* Content */}
+                    <div className="space-y-4 text-center">
+                        <div className="w-16 h-16 mx-auto bg-indigo-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+                            <span className="text-3xl">🪪</span>
+                        </div>
+                        <div>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                                Deploy Your Identity
+                            </h2>
+                            <p className="text-slate-600 dark:text-slate-400 text-base">
+                                Create your unique on-chain identity contract on Ethereum Sepolia
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Error message */}
+                    {error && (
+                        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-2xl p-4">
+                            <p className="text-sm text-red-800 dark:text-red-200">
+                                <span className="font-semibold">Error: </span>
+                                {error.message}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Button */}
+                    <div>
+                        <button
+                            onClick={handleDeployIdentity}
+                            disabled={!isConnected || loading}
+                            className={`w-full py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl border-2 ${loading || !isConnected
+                                ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-600 cursor-not-allowed'
+                                : 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-700 dark:border-indigo-600 active:scale-95'
+                                }`}
+                        >
+                            {loading ? (
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                    <span>Deploying...</span>
+                                </div>
+                            ) : (
+                                <span>Deploy Identity</span>
+                            )}
+                        </button>
+                        {!isConnected && (
+                            <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-3">
+                                Connect your wallet to get started
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Info boxes */}
+                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <div className="bg-indigo-50 dark:bg-indigo-950 rounded-xl p-3 border border-indigo-200 dark:border-indigo-800">
+                            <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider">Network</p>
+                            <p className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mt-1">Sepolia</p>
+                        </div>
+                        <div className="bg-cyan-50 dark:bg-cyan-900 rounded-xl p-3 border border-cyan-200 dark:border-cyan-800">
+                            <p className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider">Type</p>
+                            <p className="text-sm font-bold text-cyan-900 dark:text-cyan-100 mt-1">Smart Contract</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
