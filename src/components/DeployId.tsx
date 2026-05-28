@@ -4,48 +4,24 @@ import { useDeployIdentity } from "../hooks/useDeployIdentity";
 import { useAccount } from "wagmi";
 import { useState } from "react";
 
-export default function DeployId() {
+type DeployIdProps = {
+    onDeployed?: () => Promise<unknown> | void;
+};
+
+export default function DeployId({ onDeployed }: DeployIdProps) {
     const { isConnected } = useAccount();
     const { deployIdentity, loading, error } = useDeployIdentity();
-    const [deployedAddress, setDeployedAddress] = useState<`0x${string}` | null>(null);
+
     const [isHovered, setIsHovered] = useState(false);
 
     const handleDeployIdentity = async () => {
         try {
-            const deployedAddress = await deployIdentity();
-            setDeployedAddress(deployedAddress as `0x${string}`);
+            await deployIdentity();
+            await onDeployed?.();
         } catch (err) {
             console.error('Failed To Deploy Identity:', err);
         }
     };
-
-    if (deployedAddress) {
-        return (
-            <div className="relative group">
-                <div className="absolute inset-0 bg-emerald-400 rounded-3xl blur-xl opacity-20 transition-opacity duration-300" />
-                <div className="relative bg-emerald-50 dark:bg-emerald-950 rounded-3xl p-8 sm:p-10 border-2 border-emerald-200 dark:border-emerald-800 shadow-xl">
-                    <div className="space-y-4 text-center">
-                        <div className="w-14 h-14 mx-auto bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
-                            <span className="text-2xl">✨</span>
-                        </div>
-                        <div>
-                            <p className="text-emerald-700 dark:text-emerald-300 font-semibold text-lg mb-2">
-                                Identity Deployed Successfully!
-                            </p>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                                Your on-chain identity is now ready to use.
-                            </p>
-                        </div>
-                        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 break-all">
-                            <code className="text-xs sm:text-sm font-mono text-cyan-600 dark:text-cyan-400">
-                                {deployedAddress}
-                            </code>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="relative group" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
@@ -62,7 +38,7 @@ export default function DeployId() {
                         </div>
                         <div>
                             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                                Deploy Your Identity
+                                You do not have an on-chain identity yet.
                             </h2>
                             <p className="text-slate-600 dark:text-slate-400 text-base">
                                 Create your unique on-chain identity contract on Ethereum Sepolia

@@ -2,7 +2,6 @@
 
 import { ethers } from "ethers";
 import { useEthersProvider } from "./useEthers";
-// import { constants, factoryAbi } from "../constants";
 import { useEffect, useState } from "react";
 
 import { Identity, IdentitySDK } from "@onchain-id/identity-sdk";
