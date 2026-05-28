@@ -3,7 +3,7 @@
 import { usePublicClient, useAccount } from "wagmi";
 import { IdentitySDK } from "@onchain-id/identity-sdk";
 import { useState } from "react";
-import { useEthersSigner } from "./useEthersSigner";
+import { useEthersSigner } from "./useEthers";
 import { useIdentity } from "./useIdentity";
 import { constants } from "../constants";
 

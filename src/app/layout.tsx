@@ -5,7 +5,8 @@ import { ProvidersWrapper } from "./ProvidersWrapper";
 import Header from "../components/Header";
 
 export const metadata: Metadata = {
-  title: "TSender"
+  title: "On Chain ID Demo",
+  description: "A demo app for On Chain ID",
 };
 
 export default function RootLayout(props: { children: ReactNode }) {

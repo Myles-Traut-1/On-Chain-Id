@@ -4,10 +4,14 @@ import DeployId from "../components/DeployId";
 import { useAccount } from "wagmi";
 import { useIdentity } from "../hooks/useIdentity";
 import { addressZero } from "../constants";
+import { useGetIdentityDetails } from "../hooks/useGetIdentityDetails";
 
 export default function Home() {
   const { address, isConnected } = useAccount();
   const { identity, loading, error, refetch } = useIdentity(address);
+
+  /// FIX BUG. SHOULD ONLY BE CALLED WHEN IDENTITY !== ADDRESS(0)
+  const { keys, verified } = useGetIdentityDetails(address, identity);
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-slate-50 dark:bg-slate-950 py-12 sm:py-20">
@@ -115,14 +119,33 @@ export default function Home() {
                               Identity Address
                             </p>
                             <div className="flex items-center justify-between gap-4">
-                              <code className="text-sm sm:text-base font-mono text-slate-900 dark:text-cyan-300 break-all">
+                              <div className="text-sm sm:text-base font-mono text-slate-900 dark:text-cyan-300 break-all">
                                 {identity}
-                              </code>
+                                <div className="mt-2">
+                                  {keys.length > 0 && (
+                                    <div>
+                                      <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+                                        Management Keys
+                                      </p>
+                                      <ul className="text-xs font-mono text-slate-900 dark:text-cyan-300 list-disc list-inside">
+                                        {keys.map((item, index) => (
+                                          <li key={index}>
+                                            {item.key} - type: {item.type} - purposes: {item.purposes.join(', ')}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                      <div className="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
+                                        {verified ? "Your connected wallet is a manager of this identity" : "Your connected wallet is NOT a manager of this identity"}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                               <button
                                 onClick={() => {
                                   navigator.clipboard.writeText(identity);
                                 }}
-                                className="flex-shrink-0 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200"
+                                className="shrink-0 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200"
                                 title="Copy address"
                               >
                                 📋

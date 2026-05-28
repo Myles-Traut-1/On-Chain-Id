@@ -7,19 +7,19 @@ import { useState } from "react";
 export default function DeployId() {
     const { isConnected } = useAccount();
     const { deployIdentity, loading, error } = useDeployIdentity();
-    const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
+    const [deployedAddress, setDeployedAddress] = useState<`0x${string}` | null>(null);
     const [isHovered, setIsHovered] = useState(false);
 
     const handleDeployIdentity = async () => {
         try {
             const deployedAddress = await deployIdentity();
-            setTxHash(deployedAddress as `0x${string}`);
+            setDeployedAddress(deployedAddress as `0x${string}`);
         } catch (err) {
             console.error('Failed To Deploy Identity:', err);
         }
     };
 
-    if (txHash) {
+    if (deployedAddress) {
         return (
             <div className="relative group">
                 <div className="absolute inset-0 bg-emerald-400 rounded-3xl blur-xl opacity-20 transition-opacity duration-300" />
@@ -38,7 +38,7 @@ export default function DeployId() {
                         </div>
                         <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 break-all">
                             <code className="text-xs sm:text-sm font-mono text-cyan-600 dark:text-cyan-400">
-                                {txHash}
+                                {deployedAddress}
                             </code>
                         </div>
                     </div>
@@ -86,8 +86,8 @@ export default function DeployId() {
                             onClick={handleDeployIdentity}
                             disabled={!isConnected || loading}
                             className={`w-full py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl border-2 ${loading || !isConnected
-                                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-600 cursor-not-allowed'
-                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-700 dark:border-indigo-600 active:scale-95'
+                                ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-600 cursor-not-allowed'
+                                : 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-700 dark:border-indigo-600 active:scale-95'
                                 }`}
                         >
                             {loading ? (
