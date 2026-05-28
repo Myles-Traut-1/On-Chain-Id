@@ -3,12 +3,13 @@
 import { usePublicClient } from "wagmi";
 import { useCallback, useState, useEffect } from "react";
 import { constants, factoryAbi } from "../constants";
+import { useErrorHandler } from "./useErrorHandler";
 
 export function useIdentity(address?: string) {
     const publicClient = usePublicClient();
     const [identity, setIdentity] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const { error, handleError, clearError } = useErrorHandler();
 
     const fetchIdentity = useCallback(async () => {
         if (!publicClient || !address) {
@@ -19,8 +20,7 @@ export function useIdentity(address?: string) {
 
         try {
             setLoading(true);
-            setError(null);
-
+            clearError();
             const identity = await publicClient.readContract({
                 address: constants.idFactory,
                 abi: factoryAbi,
@@ -32,16 +32,13 @@ export function useIdentity(address?: string) {
             setIdentity(identityStr);
             return identityStr;
         } catch (err) {
-            const errorMessage = err instanceof Error
-                ? err.message
-                : 'Failed to fetch identity';
-            setError(errorMessage);
+            handleError(err);
             setIdentity("");
             throw err;
         } finally {
             setLoading(false);
         }
-    }, [publicClient, address]);
+    }, [publicClient, address, handleError, clearError]);
 
     useEffect(() => {
         fetchIdentity();

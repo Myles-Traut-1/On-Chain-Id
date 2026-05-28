@@ -2,16 +2,21 @@
 
 import DeployId from "../components/DeployId";
 import IdCard from "../components/IdCard";
+import ErrorAlert from "../components/ErrorAlert";
+
 import { useAccount } from "wagmi";
 import { useIdentity } from "../hooks/useIdentity";
 import { addressZero } from "../constants";
 import { useGetIdentityDetails } from "../hooks/useGetIdentityDetails";
+import { useState } from "react";
 
 export default function Home() {
   const { address, isConnected } = useAccount();
   const { identity, loading, error, refetch } = useIdentity(address);
 
   const { keys, verified } = useGetIdentityDetails(address, identity);
+
+  const [dismissedError, setDismissedError] = useState(false);
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-slate-50 dark:bg-slate-950 py-12 sm:py-20">
@@ -59,7 +64,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            ) : error ? (
+            ) : error && !dismissedError ? (
               <div className="flex justify-center">
                 <div className="w-full max-w-2xl">
                   <div className="bg-red-50 dark:bg-red-950 rounded-3xl p-8 border-2 border-red-200 dark:border-red-800 shadow-lg">
@@ -69,9 +74,11 @@ export default function Home() {
                         <h3 className="font-bold text-red-900 dark:text-red-200 mb-2">
                           Error Loading Identity
                         </h3>
-                        <p className="text-red-800 dark:text-red-300 text-sm mb-4">
-                          {error}
-                        </p>
+                        <ErrorAlert
+                          error={error}
+                          onDismiss={() => setDismissedError(true)}
+                          showDetails={false}
+                        />
                         <button
                           onClick={() => refetch()}
                           className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
