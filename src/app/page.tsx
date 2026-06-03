@@ -111,18 +111,18 @@ export default function Home() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
                 {/* ID Card Section */}
                 <div className="relative group h-full">
-                  <div className="absolute inset-0 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-3xl blur-xl opacity-25 group-hover:opacity-35 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-linear-to-b from-emerald-500 to-teal-600 rounded-3xl blur-xl opacity-25 group-hover:opacity-35 transition-opacity duration-300" />
                   <div className="relative bg-slate-900 rounded-3xl p-8 sm:p-10 border border-emerald-600/40 shadow-xl h-full overflow-hidden">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-emerald-500 to-teal-500" />
                     <IdCard identity={identity} keys={keys} verified={verified} />
                   </div>
                 </div>
 
                 {/* Wallet Management Section */}
                 <div className="relative group h-full">
-                  <div className="absolute inset-0 bg-gradient-to-b from-purple-600 to-indigo-700 rounded-3xl blur-xl opacity-25 group-hover:opacity-35 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-linear-to-b from-purple-600 to-indigo-700 rounded-3xl blur-xl opacity-25 group-hover:opacity-35 transition-opacity duration-300" />
                   <div className="relative bg-slate-900 rounded-3xl p-8 sm:p-10 border border-purple-600/40 shadow-xl h-full overflow-hidden">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500" />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-purple-500 to-indigo-500" />
                     <div className="relative z-10">
                       <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                         Manage Identity
