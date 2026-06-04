@@ -77,6 +77,33 @@ export function parseWeb3Error(err: unknown): Web3Error {
         );
     }
 
+    // Zero address error
+    if (message.includes('Zero address') || message.includes('zero address')) {
+        return new Web3Error(
+            error.message,
+            'ZERO_ADDRESS',
+            'Cannot use zero address'
+        );
+    }
+
+    // Wallet already linked error
+    if (message.includes('Wallet Already Linked To An Identity') || message.includes('wallet already linked')) {
+        return new Web3Error(
+            error.message,
+            'WALLET_ALREADY_LINKED',
+            'This wallet is already linked to an identity'
+        );
+    }
+
+    // Invalid wallet address error
+    if (message.includes('Invalid wallet address') || message.includes('invalid wallet address')) {
+        return new Web3Error(
+            error.message,
+            'INVALID_WALLET_ADDRESS',
+            'The wallet address is invalid'
+        );
+    }
+
     // Unknown error
     return new Web3Error(
         error.message,

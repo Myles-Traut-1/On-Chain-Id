@@ -9,15 +9,25 @@ import { useAccount } from "wagmi";
 import { useIdentity } from "../hooks/useIdentity";
 import { addressZero } from "../constants";
 import { useGetIdentityDetails } from "../hooks/useGetIdentityDetails";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export default function Home() {
   const { address, isConnected } = useAccount();
-  const { identity, loading, error, refetch } = useIdentity(address);
+  const { identity, linkedWallets, loading, error, refetch, refetchWallets } = useIdentity(address);
 
   const { keys, verified } = useGetIdentityDetails(address, identity);
 
   const [dismissedError, setDismissedError] = useState(false);
+
+  useEffect(() => {
+    if (error) {
+      setDismissedError(false);
+    }
+  }, [error]);
+
+  const onLinked = useCallback(() => {
+    refetchWallets(identity);
+  }, [refetchWallets, identity]);
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-slate-950 py-12 sm:py-20">
@@ -56,16 +66,6 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {/* Header Section */}
-            <div className="text-center mb-12 sm:mb-16">
-              <h1 className="text-4xl sm:text-5xl font-bold text-indigo-400 mb-4">
-                On-Chain Identity
-              </h1>
-              <p className="text-lg sm:text-xl text-slate-400 font-light">
-                Create your decentralized identity on Ethereum Sepolia
-              </p>
-            </div>
-
             {loading ? (
               <div className="flex justify-center">
                 <div className="w-full">
@@ -130,7 +130,23 @@ export default function Home() {
                       <p className="text-slate-400 mb-8 font-light">
                         Link and manage connected wallets for your identity
                       </p>
-                      <LinkWallet />
+                      <LinkWallet onLinked={onLinked} />
+                      {linkedWallets.length > 0 && (
+                        <div className="bg-purple-900/30 rounded-2xl p-4 border border-purple-700/50 backdrop-blur-sm mt-5">
+
+                          <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest mb-3">
+                            Linked Wallets
+                          </p>
+                          <ul className="space-y-3">
+                            {linkedWallets.map((wallet, index) => (
+                              <li key={index} className="text-sm font-mono text-cyan-300 bg-slate-900/50 rounded-lg p-3 break-all flex items-center gap-2">
+                                <span className="shrink-0 text-emerald-400">•</span>
+                                <span>{wallet}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -1,13 +1,24 @@
 import { useLinkWallet } from "../hooks/useLinkWallet";
+import { useIdentity } from "../hooks/useIdentity";
 import { useAccount } from "wagmi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ErrorAlert from "./ErrorAlert";
 
-export default function LinkWallet() {
+interface LinkWalletProps {
+    onLinked?: () => void;
+}
+
+export default function LinkWallet({ onLinked }: LinkWalletProps) {
     const { address } = useAccount();
-    const { linkWallet, loading, error } = useLinkWallet();
+    const { linkWallet, loading, error } = useLinkWallet(onLinked);
     const [dismissedError, setDismissedError] = useState(false);
     const [inputAddress, setInputAddress] = useState("");
+
+    useEffect(() => {
+        if (error) {
+            setDismissedError(false);
+        }
+    }, [error]);
 
     if (error && !dismissedError) {
         return (
@@ -71,16 +82,6 @@ export default function LinkWallet() {
                             Link Wallet
                         </button>
                     </div>
-                </div>
-
-                {/* Linked Wallet Info */}
-                <div className="bg-purple-900/30 rounded-2xl p-4 border border-purple-700/50 backdrop-blur-sm">
-                    <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest mb-3">
-                        Linked Wallets
-                    </p>
-                    <p className="text-lg font-bold text-purple-200 font-mono break-all">
-                        TODO: Show linked wallets here
-                    </p>
                 </div>
             </div>
         </div>

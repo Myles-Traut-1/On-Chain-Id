@@ -8,6 +8,7 @@ import { useErrorHandler } from "./useErrorHandler";
 export function useIdentity(address?: string) {
     const publicClient = usePublicClient();
     const [identity, setIdentity] = useState<string>("");
+    const [linkedWallets, setLinkedWallets] = useState<`0x${string}`[]>([]);
     const [loading, setLoading] = useState(false);
     const { error, handleError, clearError } = useErrorHandler();
 
@@ -29,7 +30,9 @@ export function useIdentity(address?: string) {
             });
 
             const identityStr = identity as string;
+
             setIdentity(identityStr);
+
             return identityStr;
         } catch (err) {
             handleError(err);
@@ -40,9 +43,42 @@ export function useIdentity(address?: string) {
         }
     }, [publicClient, address, handleError, clearError]);
 
+    const fetchWallets = useCallback(async (identityAddress: string) => {
+        if (!publicClient || !identityAddress) {
+            setLinkedWallets([]);
+            return null;
+        }
+
+        try {
+            clearError();
+            const linkedWalletsArray = await publicClient.readContract({
+                address: constants.idFactory,
+                abi: factoryAbi,
+                functionName: 'getWallets',
+                args: [identityAddress],
+            });
+
+            setLinkedWallets(linkedWalletsArray as `0x${string}`[]);
+            return linkedWalletsArray as `0x${string}`[];
+        } catch (err) {
+            handleError(err);
+            setLinkedWallets([]);
+            throw err;
+        }
+    }, [publicClient, handleError, clearError]);
+
     useEffect(() => {
-        fetchIdentity();
+        void fetchIdentity();
     }, [fetchIdentity]);
 
-    return { identity, loading, error, refetch: fetchIdentity };
+    useEffect(() => {
+        if (!identity) {
+            setLinkedWallets([]);
+            return;
+        }
+
+        void fetchWallets(identity);
+    }, [identity, fetchWallets]);
+
+    return { identity, linkedWallets, loading, error, refetch: fetchIdentity, refetchWallets: fetchWallets };
 }
