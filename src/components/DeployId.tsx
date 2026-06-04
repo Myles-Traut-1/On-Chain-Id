@@ -2,7 +2,7 @@
 
 import { useDeployIdentity } from "../hooks/useDeployIdentity";
 import { useAccount } from "wagmi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ErrorAlert from "./ErrorAlert";
 
 type DeployIdProps = {
@@ -15,6 +15,12 @@ export default function DeployId({ onDeployed }: DeployIdProps) {
 
     const [isHovered, setIsHovered] = useState(false);
     const [dismissedError, setDismissedError] = useState(false);
+
+    useEffect(() => {
+        if (error) {
+            setDismissedError(false);
+        }
+    }, [error]);
 
     const handleDeployIdentity = async () => {
         setDismissedError(false);
