@@ -17,7 +17,6 @@ export function useGetIdentityDetails(userAddress?: string, idAddress?: string) 
     const verifyIdentity = (keys: any[], hashedAddress: string): boolean => {
         for (const key of keys) {
             if (key.key === hashedAddress) {
-                console.log("The identity has been instantiated. We verified the wallet used is a manager of the identity.");
                 return true;
             }
         }
@@ -47,7 +46,6 @@ export function useGetIdentityDetails(userAddress?: string, idAddress?: string) 
                 const isManager: boolean = verifyIdentity(keys, hashedAddress);
 
                 setKeys(keys);
-                console.log("Identity Keys:", keys);
                 setVerified(isManager);
             } catch (err) {
                 handleError(err);
