@@ -1,6 +1,4 @@
 import { useLinkWallet } from "../hooks/useLinkWallet";
-import { useIdentity } from "../hooks/useIdentity";
-import { useAccount } from "wagmi";
 import { useEffect, useState } from "react";
 import ErrorAlert from "./ErrorAlert";
 
@@ -9,10 +7,13 @@ interface LinkWalletProps {
 }
 
 export default function LinkWallet({ onLinked }: LinkWalletProps) {
-    const { address } = useAccount();
-    const { linkWallet, loading, error } = useLinkWallet(onLinked);
-    const [dismissedError, setDismissedError] = useState(false);
     const [inputAddress, setInputAddress] = useState("");
+    const handleLinked = () => {
+        setInputAddress("");
+        onLinked?.();
+    };
+    const { linkWallet, loading, error } = useLinkWallet(handleLinked);
+    const [dismissedError, setDismissedError] = useState(false);
 
     useEffect(() => {
         if (error) {
