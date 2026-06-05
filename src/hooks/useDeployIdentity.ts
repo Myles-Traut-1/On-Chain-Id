@@ -15,7 +15,7 @@ export function useDeployIdentity() {
     const signer = useEthersSigner();
     const { refetch: refetchIdentity } = useIdentity(address);
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
     const { error, handleError, clearError } = useErrorHandler();
 
     const deployIdentity = async () => {
@@ -42,7 +42,7 @@ export function useDeployIdentity() {
             return identityAddr as `0x${string}`;
         }
 
-        catch (err) {
+        catch (err: unknown) {
             handleError(err);
             throw err;
 

@@ -1,13 +1,10 @@
 'use client';
 import { useAccount } from "wagmi";
-import { useState } from "react";
+import { type Key } from "@onchain-id/identity-sdk/dist/identity/Key.interface";
 
 export default function IdCard(
-    { identity, keys, verified }: { identity: string, keys: { key: string, type: string, purposes: string[] }[], verified: boolean }
+    { identity, keys }: { identity: string, keys: Key[] }
 ) {
-    const { chain } = useAccount();
-    const [showTooltip, setShowTooltip] = useState(false);
-
     return (
         <div className="w-full h-full flex flex-col">
             {/* Header */}
@@ -53,48 +50,6 @@ export default function IdCard(
                                     </li>
                                 ))}
                             </ul>
-
-                            {/* Verification Status - Minimalist Indicator with Tooltip */}
-                            <div className="mt-4 relative">
-                                <div
-                                    className="flex items-center gap-2 cursor-help"
-                                    onMouseEnter={() => setShowTooltip(true)}
-                                    onMouseLeave={() => setShowTooltip(false)}
-                                >
-                                    <div className={`w-2 h-2 rounded-full ${verified ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                                    <span className={`text-xs font-medium ${verified ? 'text-emerald-300' : 'text-amber-300'}`}>
-                                        {verified ? 'Manager' : 'Not a manager'}
-                                    </span>
-                                </div>
-
-                                {/* Tooltip */}
-                                {showTooltip && verified && (
-                                    <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg whitespace-nowrap text-xs text-slate-300 shadow-lg z-10 before:content-[''] before:absolute before:top-full before:left-2 before:border-4 before:border-slate-900 before:border-t-slate-700 before:border-r-transparent before:border-b-transparent before:border-l-transparent">
-                                        Connected wallet is verified to manage this identity
-                                    </div>
-                                )}
-                            </div>
-
-
-                            {/* Status Cards */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-emerald-900/30 rounded-2xl p-4 border border-emerald-700/50 backdrop-blur-sm">
-                                    <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-2">
-                                        Status
-                                    </p>
-                                    <p className="text-lg font-bold text-emerald-200">
-                                        Active
-                                    </p>
-                                </div>
-                                <div className="bg-cyan-900/30 rounded-2xl p-4 border border-cyan-700/50 backdrop-blur-sm">
-                                    <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-2">
-                                        Network
-                                    </p>
-                                    <p className="text-lg font-bold text-cyan-200">
-                                        {chain ? chain.name : "Unknown"}
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     )}
                 </div>

@@ -6,15 +6,16 @@ import { useEffect, useState } from "react";
 import { useErrorHandler } from "./useErrorHandler";
 
 import { Identity, IdentitySDK } from "@onchain-id/identity-sdk";
+import { type Key } from "@onchain-id/identity-sdk/dist/identity/Key.interface";
 
 export function useGetIdentityDetails(userAddress?: string, idAddress?: string) {
-    const [keys, setKeys] = useState([] as any[]);
+    const [keys, setKeys] = useState([] as Key[]);
     const [verified, setVerified] = useState(false);
     const [loading, setLoading] = useState(false);
     const { error, handleError, clearError } = useErrorHandler();
     const provider = useEthersProvider();
 
-    const verifyIdentity = (keys: any[], hashedAddress: string): boolean => {
+    const verifyIdentity = (keys: Key[], hashedAddress: string): boolean => {
         for (const key of keys) {
             if (key.key === hashedAddress) {
                 return true;
