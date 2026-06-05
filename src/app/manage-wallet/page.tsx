@@ -3,6 +3,7 @@
 import LinkWallet from "../../components/LinkWallet";
 
 import { useIdentity } from "../../hooks/useIdentity";
+import { useLinkWallet } from "../../hooks/useLinkWallet";
 import { useCallback, useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
@@ -11,11 +12,18 @@ export default function ManageWalletPage() {
     const router = useRouter();
     const { address, isConnected } = useAccount();
     const { identity, linkedWallets, refetchWallets } = useIdentity(address);
-    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
 
     const onLinked = useCallback(() => {
         refetchWallets(identity);
     }, [refetchWallets, identity]);
+
+    const onUnlinked = useCallback(() => {
+        refetchWallets(identity);
+    }, [refetchWallets, identity]);
+
+
+    const { unlinkWallet } = useLinkWallet(onLinked, onUnlinked);
+    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
 
     useEffect(() => {
         if (!isConnected) {
@@ -91,8 +99,11 @@ export default function ManageWalletPage() {
                                                                     <span className="block flex-1 min-w-0 break-all whitespace-normal">{wallet}</span>
                                                                 </span>
                                                                 {wallet !== address && (
-                                                                    <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors">
-                                                                        Remove
+                                                                    <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
+                                                                        onClick={() => {
+                                                                            unlinkWallet(wallet);
+                                                                        }}>
+                                                                        Unlink
                                                                     </button>
                                                                 )}
                                                             </li>
