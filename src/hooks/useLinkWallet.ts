@@ -5,6 +5,7 @@ import { constants, factoryAbi } from "../constants";
 import { useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { useState, useEffect } from "react";
 import { addressZero } from "../constants";
+import { isAddress } from 'viem';
 
 export function useLinkWallet(onLinked?: () => void) {
     const publicClient = usePublicClient();
@@ -44,7 +45,7 @@ export function useLinkWallet(onLinked?: () => void) {
             throw err;
         }
 
-        if (walletAddress.length !== 42 || !walletAddress.startsWith("0x")) {
+        if (!isAddress(walletAddress)) {
             const err = new Error("Invalid wallet address");
             handleError(err);
             throw err;

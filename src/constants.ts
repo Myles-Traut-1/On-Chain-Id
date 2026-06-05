@@ -5,9 +5,9 @@ interface constantsConfig {
 }
 
 export const constants: constantsConfig = {
-    idFactory: "0x23b64FBc42Ef1775F8A099965659c4c5C91e0CeC",
-    gateway: "0xa974c2e2fa9bbc14f4d13413e1AAcB5Fe446Cdac",
-    implementationAuthority: "0xC153Be7F3C5f70A70bf6543776fc1E9FC62272be"
+    idFactory: process.env.NEXT_PUBLIC_ID_FACTORY as `0x${string}`,
+    gateway: process.env.NEXT_PUBLIC_GATEWAY as `0x${string}`,
+    implementationAuthority: process.env.NEXT_PUBLIC_IMPL_AUTHORITY as `0x${string}`,
 };
 
 export const addressZero = "0x0000000000000000000000000000000000000000";
