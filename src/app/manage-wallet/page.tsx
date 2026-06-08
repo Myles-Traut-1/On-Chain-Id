@@ -3,6 +3,7 @@
 import LinkWallet from "../../components/LinkWallet";
 
 import { useIdentity } from "../../hooks/useIdentity";
+import { useGetIdentityDetails } from "../../hooks/useGetIdentityDetails";
 import { useManageWallet } from "../../hooks/useLinkWallet";
 import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
@@ -12,6 +13,7 @@ export default function ManageWalletPage() {
     const router = useRouter();
     const { address, status, isConnecting, isReconnecting } = useAccount();
     const { identity, linkedWallets, refetchWallets } = useIdentity(address);
+    const { verified, loading: verifyLoading } = useGetIdentityDetails(address, identity);
 
     const onLinked = useCallback(() => {
         refetchWallets(identity);
@@ -41,7 +43,28 @@ export default function ManageWalletPage() {
         if (status === 'disconnected') {
             router.replace('/');
         }
-    }, [initialConnectionWindowPassed, isConnecting, isReconnecting, status, router]);
+        if (verifyLoading) return;
+        if (!verified) {
+            router.replace('/');
+        }
+    }, [initialConnectionWindowPassed, isConnecting, isReconnecting, status, verified, verifyLoading, router]);
+
+    if (verifyLoading || !verified) {
+        return (
+            <div className="h-[calc(100vh-80px)] bg-slate-950 overflow-hidden flex items-center justify-center px-6">
+                <div className="relative group w-full max-w-sm">
+                    <div className="absolute inset-0 bg-linear-to-b from-purple-600 to-indigo-700 rounded-2xl blur-lg opacity-20" />
+                    <div className="relative bg-slate-900 rounded-2xl border border-purple-600/40 shadow-lg px-8 py-10 flex flex-col items-center gap-4">
+                        <div className="relative">
+                            <div className="h-12 w-12 rounded-full border-2 border-purple-500/20" />
+                            <div className="absolute inset-0 h-12 w-12 rounded-full border-2 border-transparent border-t-purple-400 border-r-indigo-400 animate-spin" />
+                        </div>
+                        <p className="text-sm font-medium text-slate-200 tracking-wide">Verifying identity...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-[calc(100vh-80px)] bg-slate-950 overflow-hidden flex flex-col">

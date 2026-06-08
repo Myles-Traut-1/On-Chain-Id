@@ -4,7 +4,6 @@ import { useDeployIdentity } from "../hooks/useDeployIdentity";
 import { useAccount } from "wagmi";
 import { useState, useEffect } from "react";
 import ErrorAlert from "./ErrorAlert";
-import { useErrorHandler } from "../hooks/useErrorHandler";
 
 type DeployIdProps = {
     onDeployed?: () => Promise<unknown> | void;
@@ -15,7 +14,6 @@ export default function DeployId({ onDeployed }: DeployIdProps) {
     const { deployIdentity, loading, error } = useDeployIdentity();
 
     const [isHovered, setIsHovered] = useState(false);
-    const { handleError, clearError } = useErrorHandler();
     const [dismissedError, setDismissedError] = useState(false);
 
     useEffect(() => {
@@ -29,8 +27,8 @@ export default function DeployId({ onDeployed }: DeployIdProps) {
         try {
             await deployIdentity();
             await onDeployed?.();
-        } catch (err) {
-            handleError(err);
+        } catch {
+            // error is handled and surfaced by useDeployIdentity
         }
     };
 
