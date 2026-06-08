@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "echo 'No tests configured yet'",
     "anvil": "source .env.local && anvil --fork-url $SEPOLIA_URL --chain-id 31337",
     "anvil:fund": "source .env.local && cast rpc anvil_setBalance $ANVIL_ACCOUNT_1 $(cast to-wei 10 ether) --rpc-url $ANVIL_URL",
     "prepare": "husky"
