@@ -2,8 +2,10 @@
 
 import { usePublicClient } from "wagmi";
 import { useCallback, useState, useEffect } from "react";
-import { constants, factoryAbi } from "../constants";
+import { constants } from "../constants/constants";
 import { useErrorHandler } from "./useErrorHandler";
+
+import factoryAbi from "../constants/abis/factoryAbi.json";
 
 export function useIdentity(address?: string) {
     const publicClient = usePublicClient();

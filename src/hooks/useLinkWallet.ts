@@ -1,66 +1,68 @@
 'use client';
 
 import { useErrorHandler } from "../hooks/useErrorHandler";
-import { constants, factoryAbi } from "../constants";
+import { constants } from "../constants/constants";
+import factoryAbi from "../constants/abis/factoryAbi.json";
 import { useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { useState, useEffect } from "react";
-import { addressZero } from "../constants";
-import { isAddress } from 'viem';
+import { addressZero } from "../constants/constants";
+import { validateAddress, validateWalletAndClient } from "../utils/utils";
 
-export function useLinkWallet(onLinked?: () => void, onUnlinked?: () => void) {
-    const publicClient = usePublicClient();
+import type { UsePublicClientReturnType, UseWaitForTransactionReceiptReturnType } from "wagmi"
+
+
+export function useManageWallet(onLinked?: () => void, onUnlinked?: () => void) {
+    const publicClient: UsePublicClientReturnType = usePublicClient();
     const { writeContractAsync } = useWriteContract();
     const { error, handleError, clearError } = useErrorHandler();
-    const [loading, setLoading] = useState(false);
-    const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined)
 
-    const receipt = useWaitForTransactionReceipt({
+    const [loading, setLoading] = useState<boolean>(false);
+    const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined)
+    const [pendingOp, setPendingOp] = useState<'link' | 'unlink' | null>(null)
+
+    const receipt: UseWaitForTransactionReceiptReturnType = useWaitForTransactionReceipt({
         hash: txHash
     });
 
     useEffect(() => {
-        if (receipt.isSuccess && receipt.data?.status === "success") {
+        const isCurrentReceipt = !!txHash && receipt.data?.transactionHash === txHash;
+
+        if (isCurrentReceipt && receipt.isSuccess && receipt.data?.status === "success") {
             setLoading(false);
-            if (onLinked) {
-                onLinked();
+            if (pendingOp === 'link') {
+                onLinked?.();
+                setPendingOp(null);
+            } else if (pendingOp === 'unlink') {
+                onUnlinked?.();
+                setPendingOp(null);
             }
-            if (onUnlinked) {
-                onUnlinked();
-            }
+
+            setTxHash(undefined);
         }
 
-        if (receipt.isError) {
+        if (isCurrentReceipt && receipt.isError) {
             handleError(receipt.error);
             setLoading(false);
+            setPendingOp(null);
+            setTxHash(undefined);
         }
-    }, [receipt.isSuccess, receipt.isError, receipt.data, receipt.error, handleError, onLinked, onUnlinked]);
+    }, [txHash, receipt.isSuccess, receipt.isError, receipt.data, receipt.error, handleError, onLinked, onUnlinked, pendingOp]);
 
     const linkWallet = async (walletAddress: string) => {
-        if (!walletAddress) {
-            const err = new Error("Wallet address is required");
-            handleError(err);
-            throw err;
+        const { valid: walletAndClientValid, error: walletAndClientError } = validateWalletAndClient(walletAddress, publicClient);
+        if (!walletAndClientValid) {
+            handleError(walletAndClientError);
+            throw walletAndClientError;
         }
 
-        if (!publicClient) {
-            const err = new Error("Public client is not available");
-            handleError(err);
-            throw err;
+        const { valid, error: validationError } = validateAddress(walletAddress);
+        if (!valid) {
+            handleError(validationError);
+            throw validationError;
         }
 
-        if (!isAddress(walletAddress)) {
-            const err = new Error("Invalid wallet address");
-            handleError(err);
-            throw err;
-        }
 
-        if (walletAddress === addressZero) {
-            const err = new Error("LinkeWallet__Zero address");
-            handleError(err);
-            throw err;
-        }
-
-        const identityAddr = await publicClient.readContract({
+        const identityAddr = await publicClient!.readContract({
             address: constants.idFactory,
             abi: factoryAbi,
             functionName: 'getIdentity',
@@ -76,6 +78,8 @@ export function useLinkWallet(onLinked?: () => void, onUnlinked?: () => void) {
         try {
             clearError();
             setLoading(true);
+            setTxHash(undefined);
+
             const txHash = await writeContractAsync({
                 address: constants.idFactory,
                 abi: factoryAbi,
@@ -84,44 +88,35 @@ export function useLinkWallet(onLinked?: () => void, onUnlinked?: () => void) {
             });
 
             setTxHash(txHash);
+            setPendingOp('link');
 
         } catch (err) {
+            setLoading(false);
             handleError(err);
             throw err;
-        } finally {
-            setLoading(false);
         }
 
     };
 
     const unlinkWallet = async (walletAddress: string) => {
-        if (!walletAddress) {
-            const err = new Error("Wallet address is required");
-            handleError(err);
-            throw err;
+        const { valid: walletAndClientValid, error: walletAndClientError } = validateWalletAndClient(walletAddress, publicClient);
+        if (!walletAndClientValid) {
+            handleError(walletAndClientError);
+            throw walletAndClientError;
         }
 
-        if (!publicClient) {
-            const err = new Error("Public client is not available");
-            handleError(err);
-            throw err;
-        }
 
-        if (!isAddress(walletAddress)) {
-            const err = new Error("Invalid wallet address");
-            handleError(err);
-            throw err;
-        }
-
-        if (walletAddress === addressZero) {
-            const err = new Error("LinkeWallet__Zero address");
-            handleError(err);
-            throw err;
+        const { valid, error: validationError } = validateAddress(walletAddress);
+        if (!valid) {
+            handleError(validationError);
+            throw validationError;
         }
 
         try {
             clearError();
             setLoading(true);
+            setTxHash(undefined);
+
             const txHash = await writeContractAsync({
                 address: constants.idFactory,
                 abi: factoryAbi,
@@ -130,12 +125,12 @@ export function useLinkWallet(onLinked?: () => void, onUnlinked?: () => void) {
             });
 
             setTxHash(txHash);
+            setPendingOp('unlink');
 
         } catch (err) {
+            setLoading(false);
             handleError(err);
             throw err;
-        } finally {
-            setLoading(false);
         }
 
     };

@@ -5,7 +5,7 @@ import { IdentitySDK } from "@onchain-id/identity-sdk";
 import { useState } from "react";
 import { useEthersSigner } from "./useEthers";
 import { useIdentity } from "./useIdentity";
-import { constants } from "../constants";
+import { constants } from "../constants/constants";
 import { useErrorHandler } from "./useErrorHandler";
 
 

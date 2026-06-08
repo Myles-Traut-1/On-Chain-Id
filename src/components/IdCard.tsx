@@ -59,9 +59,9 @@ export default function IdCard(
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
                                             <h4 className="text-xs sm:text-sm font-semibold text-white">
-                                                {claim.type}
+                                                Coming Soon
                                             </h4>
-                                            {claim.verified && (
+                                            {/* {claim.verified && (
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                                                     Verified
                                                 </span>
@@ -70,14 +70,14 @@ export default function IdCard(
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
                                                     Pending
                                                 </span>
-                                            )}
+                                            )} */}
                                         </div>
-                                        <p className="text-xs text-slate-300 mt-1 truncate">
+                                        {/* <p className="text-xs text-slate-300 mt-1 truncate">
                                             {claim.value}
                                         </p>
                                         <p className="text-xs text-slate-500 mt-1 truncate">
                                             Issuer: {claim.issuer}
-                                        </p>
+                                        </p> */}
                                     </div>
                                     <button
                                         className="shrink-0 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-800/50 rounded text-slate-400 hover:text-slate-300"

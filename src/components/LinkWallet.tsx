@@ -1,4 +1,4 @@
-import { useLinkWallet } from "../hooks/useLinkWallet";
+import { useManageWallet } from "../hooks/useLinkWallet";
 import { useEffect, useState } from "react";
 import ErrorAlert from "./ErrorAlert";
 
@@ -12,7 +12,7 @@ export default function LinkWallet({ onLinked }: LinkWalletProps) {
         setInputAddress("");
         onLinked?.();
     };
-    const { linkWallet, loading, error } = useLinkWallet(handleLinked);
+    const { linkWallet, loading, error } = useManageWallet(handleLinked);
     const [dismissedError, setDismissedError] = useState(false);
 
     useEffect(() => {

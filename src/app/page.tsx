@@ -7,12 +7,12 @@ import Link from "next/link";
 
 import { useAccount } from "wagmi";
 import { useIdentity } from "../hooks/useIdentity";
-import { addressZero } from "../constants";
+import { addressZero } from "../constants/constants";
 import { useGetIdentityDetails } from "../hooks/useGetIdentityDetails";
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chain } = useAccount();
   const { identity, loading, error, refetch } = useIdentity(address);
 
   const { keys, verified } = useGetIdentityDetails(address, identity);
@@ -136,6 +136,11 @@ export default function Home() {
                           Connected wallet is verified to manage this identity
                         </div>
                       )}
+                      {showTooltip && !verified && (
+                        <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg whitespace-nowrap text-xs text-slate-300 shadow-lg z-10 before:content-[''] before:absolute before:top-full before:right-4 before:border-4 before:border-slate-900 before:border-t-slate-700 before:border-r-transparent before:border-b-transparent before:border-l-transparent">
+                          Connected wallet is not verified to manage this identity
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -192,7 +197,7 @@ export default function Home() {
                           Network
                         </p>
                         <p className="text-xs sm:text-sm font-bold text-cyan-200">
-                          {address && address.length > 0 ? "Anvil" : "Unknown"}
+                          {address && address.length > 0 ? chain?.name : "Unknown"}
                         </p>
                       </div>
                     </div>

@@ -3,14 +3,14 @@
 import LinkWallet from "../../components/LinkWallet";
 
 import { useIdentity } from "../../hooks/useIdentity";
-import { useLinkWallet } from "../../hooks/useLinkWallet";
-import { useCallback, useState, useEffect } from "react";
+import { useManageWallet } from "../../hooks/useLinkWallet";
+import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
 
 export default function ManageWalletPage() {
     const router = useRouter();
-    const { address, isConnected } = useAccount();
+    const { address, status, isConnecting, isReconnecting } = useAccount();
     const { identity, linkedWallets, refetchWallets } = useIdentity(address);
 
     const onLinked = useCallback(() => {
@@ -22,14 +22,26 @@ export default function ManageWalletPage() {
     }, [refetchWallets, identity]);
 
 
-    const { unlinkWallet } = useLinkWallet(onLinked, onUnlinked);
+    const { unlinkWallet } = useManageWallet(onLinked, onUnlinked);
     const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
+    const [initialConnectionWindowPassed, setInitialConnectionWindowPassed] = useState(false);
 
     useEffect(() => {
-        if (!isConnected) {
-            router.push("/");
+        // Give wallet providers a brief window to restore session after refresh.
+        const timeout = window.setTimeout(() => {
+            setInitialConnectionWindowPassed(true);
+        }, 600);
+
+        return () => window.clearTimeout(timeout);
+    }, []);
+
+    useEffect(() => {
+        if (!initialConnectionWindowPassed) return;
+        if (isConnecting || isReconnecting) return;
+        if (status === 'disconnected') {
+            router.replace('/');
         }
-    }, [isConnected, router]);
+    }, [initialConnectionWindowPassed, isConnecting, isReconnecting, status, router]);
 
     return (
         <div className="h-[calc(100vh-80px)] bg-slate-950 overflow-hidden flex flex-col">
