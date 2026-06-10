@@ -1,13 +1,15 @@
 'use client';
 
 import LinkWallet from "../../components/LinkWallet";
+import AddKeys from "../../components/AddKeys";
 
 import { useIdentity } from "../../hooks/useIdentity";
 import { useGetIdentityDetails } from "../../hooks/useGetIdentityDetails";
-import { useManageWallet } from "../../hooks/useLinkWallet";
+import { useManageWallet } from "../../hooks/useManageWallet";
 import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
+
 
 export default function ManageWalletPage() {
     const router = useRouter();
@@ -184,42 +186,7 @@ export default function ManageWalletPage() {
                             {expandedSection === 'key' && (
                                 <>
                                     <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-indigo-500/0 via-indigo-500/40 to-indigo-500/0" />
-                                    <div className="px-4 sm:px-6 pb-6 space-y-4">
-                                        {/* Key Input */}
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                                                Address
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="0x..."
-                                                className="w-full px-4 py-3 rounded-lg text-sm font-mono bg-slate-800/50 border border-slate-700/50 text-cyan-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                                            />
-                                        </div>
-
-                                        {/* Key Type Selection */}
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                                                Key Type
-                                            </label>
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <button className="px-3 py-2 text-xs font-medium rounded-lg border-2 border-indigo-500 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition-colors">
-                                                    Management
-                                                </button>
-                                                <button className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-300 transition-colors">
-                                                    Action
-                                                </button>
-                                                <button className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-300 transition-colors">
-                                                    Claim
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Submit Button */}
-                                        <button className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-all duration-200">
-                                            Add Key
-                                        </button>
-                                    </div>
+                                    <AddKeys idAddress={identity} />
                                 </>
                             )}
                         </div>

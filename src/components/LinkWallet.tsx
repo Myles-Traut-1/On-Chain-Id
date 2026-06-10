@@ -1,4 +1,4 @@
-import { useManageWallet } from "../hooks/useLinkWallet";
+import { useManageWallet } from "../hooks/useManageWallet";
 import { useEffect, useState } from "react";
 import ErrorAlert from "./ErrorAlert";
 
