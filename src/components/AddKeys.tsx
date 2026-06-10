@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useManageKeys } from "../hooks/useManageKeys";
 
-export default function AddKeys({idAddress}: {idAddress: string}) {
-    const { loading, error, addManagementKey, isConfirmed } = useManageKeys();
+export default function AddKeys({ idAddress, onKeyAdded }: { idAddress: string, onKeyAdded?: () => void }) {
+    const { loading, error, addManagementKey } = useManageKeys(onKeyAdded);
     const [keyAddress, setKeyAddress] = useState("");
 
     return (

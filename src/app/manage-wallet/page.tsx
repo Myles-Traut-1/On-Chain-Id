@@ -14,8 +14,8 @@ import { useRouter } from "next/navigation";
 export default function ManageWalletPage() {
     const router = useRouter();
     const { address, status, isConnecting, isReconnecting } = useAccount();
-    const { identity, linkedWallets, refetchWallets } = useIdentity(address);
-    const { verified, loading: verifyLoading } = useGetIdentityDetails(address, identity);
+    const { identity, refetchWallets } = useIdentity(address);
+    const { verified, loading: verifyLoading, managementKeys, getManagementKeys } = useGetIdentityDetails(address, identity);
 
     const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
     const [initialConnectionWindowPassed, setInitialConnectionWindowPassed] = useState(false);
@@ -24,7 +24,7 @@ export default function ManageWalletPage() {
         refetchWallets(identity);
     }, [refetchWallets, identity]);
 
-    const { unlinkWallet } = useManageWallet(onLinked, undefined);
+    useManageWallet(onLinked, undefined);
 
     useEffect(() => {
         // Give wallet providers a brief window to restore session after refresh.
@@ -46,6 +46,12 @@ export default function ManageWalletPage() {
             router.replace('/');
         }
     }, [initialConnectionWindowPassed, isConnecting, isReconnecting, status, verified, verifyLoading, router]);
+
+    const handleKeyAdded = useCallback(() => {
+        setTimeout(() => {
+            getManagementKeys();
+        }, 20000);
+    }, [getManagementKeys]);
 
     if (verifyLoading || !verified) {
         return (
@@ -118,7 +124,25 @@ export default function ManageWalletPage() {
                                                 <LinkWallet onLinked={onLinked} />
                                             </div>
 
-                                           
+                                            {/* Management Keys List */}
+                                            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 flex flex-col">
+                                                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
+                                                    Management Keys ({managementKeys.length})
+                                                </h3>
+                                                {managementKeys.length === 0 ? (
+                                                    <p className="text-xs text-slate-500 italic">No management keys found.</p>
+                                                ) : (
+                                                    <ul className="space-y-2 overflow-y-auto flex-1">
+                                                        {managementKeys.map((key, index) => (
+                                                            console.log("rendering key:", key),
+                                                            <li key={index} className="text-xs sm:text-sm font-mono text-cyan-300 bg-slate-900/50 rounded-lg p-3 flex items-start gap-2">
+                                                                <span className="shrink-0 text-emerald-400">✓</span>
+                                                                <span className="block flex-1 min-w-0 break-all whitespace-normal">{key.key}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </>
@@ -157,7 +181,7 @@ export default function ManageWalletPage() {
                             {expandedSection === 'key' && (
                                 <>
                                     <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-indigo-500/0 via-indigo-500/40 to-indigo-500/0" />
-                                    <AddKeys idAddress={identity} />
+                                    <AddKeys idAddress={identity} onKeyAdded={handleKeyAdded} />
                                 </>
                             )}
                         </div>

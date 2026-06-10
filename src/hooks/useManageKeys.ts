@@ -19,7 +19,7 @@ import type {
   UseWaitForTransactionReceiptReturnType,
 } from "wagmi";
 
-export function useManageKeys() {
+export function useManageKeys(onKeyAdded?: () => void) {
   const publicClient: UsePublicClientReturnType = usePublicClient();
   const { error, handleError, clearError } = useErrorHandler();
   const { writeContractAsync } = useWriteContract();
@@ -40,6 +40,11 @@ export function useManageKeys() {
     const isCurrentReceipt =
       !!txHash && receipt.data?.transactionHash === txHash;
 
+    console.log("txHash:", txHash);
+    console.log("isCurrentReceipt:", isCurrentReceipt);
+    console.log("receipt.isSuccess:", receipt.isSuccess);
+    console.log("receipt.data?.status:", receipt.data?.status);
+
     if (
       isCurrentReceipt &&
       receipt.isSuccess &&
@@ -47,6 +52,7 @@ export function useManageKeys() {
     ) {
       setLoading(false);
       setTxHash(undefined);
+      onKeyAdded?.();
     }
 
     if (isCurrentReceipt && receipt.isError) {
@@ -61,6 +67,7 @@ export function useManageKeys() {
     receipt.data,
     receipt.error,
     handleError,
+    onKeyAdded,
   ]);
 
   const addManagementKey = async (idAddress: string, keyAddress: string) => {

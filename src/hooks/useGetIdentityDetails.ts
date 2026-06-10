@@ -12,7 +12,7 @@ export function useGetIdentityDetails(
   userAddress?: string,
   idAddress?: string,
 ) {
-  const [keys, setKeys] = useState([] as Key[]);
+  const [managementKeys, setManagementKeys] = useState([] as Key[]);
   const [verified, setVerified] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const { error, handleError, clearError } = useErrorHandler();
@@ -34,7 +34,7 @@ export function useGetIdentityDetails(
       !userAddress ||
       idAddress === ethers.constants.AddressZero
     ) {
-      setKeys([]);
+      setManagementKeys([]);
       setVerified(false);
       return null;
     }
@@ -45,7 +45,7 @@ export function useGetIdentityDetails(
 
       const identity = await Identity.at(idAddress, { provider });
 
-      const keys = await identity.getKeysByPurpose(
+      const managementKeys = await identity.getKeysByPurpose(
         IdentitySDK.utils.enums.KeyPurpose.MANAGEMENT,
       );
 
@@ -54,13 +54,13 @@ export function useGetIdentityDetails(
         [userAddress],
       );
 
-      const isManager: boolean = verifyIdentity(keys, hashedAddress);
+      const isManager: boolean = verifyIdentity(managementKeys, hashedAddress);
 
-      setKeys(keys);
+      // setManagementKeys(managementKeys);
       setVerified(isManager);
     } catch (err) {
       handleError(err);
-      setKeys([]);
+      setManagementKeys([]);
       setVerified(false);
       throw err;
     } finally {
@@ -68,15 +68,50 @@ export function useGetIdentityDetails(
     }
   }, [provider, idAddress, userAddress, clearError, handleError]);
 
+  const getManagementKeys = useCallback(async () => {
+    if (!provider || !idAddress || idAddress === ethers.constants.AddressZero) {
+      setManagementKeys([]);
+      return null;
+    }
+
+    try {
+      clearError();
+      setLoading(true);
+
+      const identity = await Identity.at(idAddress, { provider });
+
+      console.log("getManagementKeys called, idAddress:", idAddress);
+
+      const managementKeys = await identity.getKeysByPurpose(
+        IdentitySDK.utils.enums.KeyPurpose.MANAGEMENT,
+      );
+
+      console.log("fetched keys:", managementKeys);
+
+      setManagementKeys(managementKeys);
+    } catch (err) {
+      handleError(err);
+      setManagementKeys([]);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [provider, idAddress, clearError, handleError]);
+
   useEffect(() => {
-    getIdentityDetails();
+    const run = async () => {
+      await getIdentityDetails();
+      await getManagementKeys();
+    };
+    run();
   }, [getIdentityDetails]);
 
   return {
-    keys,
+    managementKeys,
     verified,
     loading,
     error,
     getIdentityDetails,
+    getManagementKeys,
   };
 }

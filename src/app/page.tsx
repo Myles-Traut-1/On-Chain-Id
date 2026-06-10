@@ -182,8 +182,13 @@ export default function Home() {
                               <span className="text-base">⚙️</span>
                             </div>
                             <div>
-                              <h3 className="text-xs sm:text-sm font-bold text-white">Manage Wallet</h3>
-                              <p className="text-xs text-slate-400 mt-0.5">Link wallets</p>
+                              <h3 className="text-xs sm:text-sm font-bold text-white">Manage Identity</h3>
+                              <div className="text-xs text-slate-400 mt-0.5">
+                                <ul>
+                                  <li>Link wallets</li>
+                                  <li>Manage keys</li>
+                                </ul>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -203,7 +208,7 @@ export default function Home() {
                                             <span className="shrink-0 text-emerald-400">✓</span>
                                             <span className="block flex-1 min-w-0 break-all whitespace-normal">{wallet}</span>
                                         </span>
-                                        {wallet !== address && (
+                                        {wallet !== address && verified && (
                                             <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
                                                 onClick={() => {
                                                     unlinkWallet(wallet);
