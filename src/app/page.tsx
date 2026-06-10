@@ -9,16 +9,24 @@ import { useAccount } from "wagmi";
 import { useIdentity } from "../hooks/useIdentity";
 import { addressZero } from "../constants/constants";
 import { useGetIdentityDetails } from "../hooks/useGetIdentityDetails";
-import { useState, useEffect } from "react";
+import {useManageWallet} from "../hooks/useManageWallet";
+import { useState, useEffect, useCallback } from "react";
 
 export default function Home() {
-  const { address, isConnected, chain } = useAccount();
-  const { identity, loading, error, refetch } = useIdentity(address);
+  const { address, isConnected } = useAccount();
+  const { identity, linkedWallets, refetchWallets, loading, error, refetch } = useIdentity(address);
 
   const { verified } = useGetIdentityDetails(address, identity);
 
   const [dismissedError, setDismissedError] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+
+  const onUnlinked = useCallback(() => {
+      refetchWallets(identity);
+  }, [refetchWallets, identity]);
+
+
+  const { unlinkWallet } = useManageWallet(undefined, onUnlinked);
 
   useEffect(() => {
     if (error) {
@@ -182,25 +190,32 @@ export default function Home() {
                       </Link>
                     )}
 
-                    {/* Status Cards Stack */}
-                    <div className="space-y-2 sm:space-y-3 shrink-0">
-                      <div className="bg-emerald-900/30 rounded-2xl p-3 sm:p-4 border border-emerald-700/50 backdrop-blur-sm">
-                        <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-0.5">
-                          Status
-                        </p>
-                        <p className="text-xs sm:text-sm font-bold text-emerald-200">
-                          Active
-                        </p>
-                      </div>
-                      <div className="bg-cyan-900/30 rounded-2xl p-3 sm:p-4 border border-cyan-700/50 backdrop-blur-sm">
-                        <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-0.5">
-                          Network
-                        </p>
-                        <p className="text-xs sm:text-sm font-bold text-cyan-200">
-                          {address && address.length > 0 ? chain?.name : "Unknown"}
-                        </p>
-                      </div>
-                    </div>
+                     
+                    {linkedWallets.length > 0 && (
+                        <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 flex flex-col">
+                            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
+                                Linked Wallets ({linkedWallets.length})
+                            </h3>
+                            <ul className="space-y-2 overflow-y-auto flex-1">
+                                {linkedWallets.map((wallet, index) => (
+                                    <li key={index} className="text-xs sm:text-sm font-mono text-cyan-300 bg-slate-900/50 rounded-lg p-3 flex items-start justify-between">
+                                        <span className="flex items-center gap-2 flex-1 min-w-0">
+                                            <span className="shrink-0 text-emerald-400">✓</span>
+                                            <span className="block flex-1 min-w-0 break-all whitespace-normal">{wallet}</span>
+                                        </span>
+                                        {wallet !== address && (
+                                            <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
+                                                onClick={() => {
+                                                    unlinkWallet(wallet);
+                                                }}>
+                                                Unlink
+                                            </button>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -17,18 +17,14 @@ export default function ManageWalletPage() {
     const { identity, linkedWallets, refetchWallets } = useIdentity(address);
     const { verified, loading: verifyLoading } = useGetIdentityDetails(address, identity);
 
+    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
+    const [initialConnectionWindowPassed, setInitialConnectionWindowPassed] = useState(false);
+
     const onLinked = useCallback(() => {
         refetchWallets(identity);
     }, [refetchWallets, identity]);
 
-    const onUnlinked = useCallback(() => {
-        refetchWallets(identity);
-    }, [refetchWallets, identity]);
-
-
-    const { unlinkWallet } = useManageWallet(onLinked, onUnlinked);
-    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
-    const [initialConnectionWindowPassed, setInitialConnectionWindowPassed] = useState(false);
+    const { unlinkWallet } = useManageWallet(onLinked, undefined);
 
     useEffect(() => {
         // Give wallet providers a brief window to restore session after refresh.
@@ -122,32 +118,7 @@ export default function ManageWalletPage() {
                                                 <LinkWallet onLinked={onLinked} />
                                             </div>
 
-                                            {/* Linked Wallets List */}
-                                            {linkedWallets.length > 0 && (
-                                                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 flex flex-col">
-                                                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                                                        Linked Wallets ({linkedWallets.length})
-                                                    </h3>
-                                                    <ul className="space-y-2 overflow-y-auto flex-1">
-                                                        {linkedWallets.map((wallet, index) => (
-                                                            <li key={index} className="text-xs sm:text-sm font-mono text-cyan-300 bg-slate-900/50 rounded-lg p-3 flex items-start justify-between">
-                                                                <span className="flex items-center gap-2 flex-1 min-w-0">
-                                                                    <span className="shrink-0 text-emerald-400">✓</span>
-                                                                    <span className="block flex-1 min-w-0 break-all whitespace-normal">{wallet}</span>
-                                                                </span>
-                                                                {wallet !== address && (
-                                                                    <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
-                                                                        onClick={() => {
-                                                                            unlinkWallet(wallet);
-                                                                        }}>
-                                                                        Unlink
-                                                                    </button>
-                                                                )}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
+                                           
                                         </div>
                                     </div>
                                 </>
