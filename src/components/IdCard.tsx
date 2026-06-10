@@ -1,11 +1,9 @@
 'use client';
 
-import { type Key } from "@onchain-id/identity-sdk/dist/identity/Key.interface";
-
 import { claims } from "../mocks/claims_array";
 
 export default function IdCard(
-    { identity, keys }: { identity: string, keys: Key[] }
+    { identity }: { identity: string }
 ) {
     return (
         <div className="w-full h-full flex flex-col">

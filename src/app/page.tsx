@@ -15,7 +15,7 @@ export default function Home() {
   const { address, isConnected, chain } = useAccount();
   const { identity, loading, error, refetch } = useIdentity(address);
 
-  const { keys, verified } = useGetIdentityDetails(address, identity);
+  const { verified } = useGetIdentityDetails(address, identity);
 
   const [dismissedError, setDismissedError] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -153,7 +153,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-linear-to-b from-emerald-500 to-teal-600 rounded-3xl blur-xl opacity-25 group-hover:opacity-35 transition-opacity duration-300" />
                       <div className="relative bg-slate-900 rounded-3xl p-6 sm:p-8 border border-emerald-600/40 shadow-xl h-full overflow-y-auto">
                         <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-emerald-500 to-teal-500" />
-                        <IdCard identity={identity} keys={keys} />
+                        <IdCard identity={identity} />
                       </div>
                     </div>
                   </div>
