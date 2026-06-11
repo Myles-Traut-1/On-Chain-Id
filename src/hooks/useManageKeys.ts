@@ -1,4 +1,6 @@
 import { identityAbi } from "../constants/abis/identityAbi";
+import { factoryAbi } from "../constants/abis/factoryAbi";
+import { constants } from "../constants/constants";
 import {
   useWriteContract,
   usePublicClient,
@@ -40,11 +42,6 @@ export function useManageKeys(onKeyAdded?: () => void) {
     const isCurrentReceipt =
       !!txHash && receipt.data?.transactionHash === txHash;
 
-    console.log("txHash:", txHash);
-    console.log("isCurrentReceipt:", isCurrentReceipt);
-    console.log("receipt.isSuccess:", receipt.isSuccess);
-    console.log("receipt.data?.status:", receipt.data?.status);
-
     if (
       isCurrentReceipt &&
       receipt.isSuccess &&
@@ -85,9 +82,24 @@ export function useManageKeys(onKeyAdded?: () => void) {
       throw validationError;
     }
 
+    clearError();
+    setLoading(true);
+
     try {
-      setLoading(true);
-      clearError();
+      const wallets: readonly `0x${string}`[] | undefined =
+        await publicClient?.readContract({
+          address: constants.idFactory,
+          abi: factoryAbi,
+          functionName: "getWallets",
+          args: [idAddress as `0x{string}`],
+        });
+
+      if (!wallets?.includes(keyAddress as `0x{string}`)) {
+        const err = new Error("Link Wallet First.");
+        handleError(err);
+        setLoading(false);
+        return;
+      }
 
       const key = IdentitySDK.utils.encodeAndHash(["address"], [keyAddress]);
 

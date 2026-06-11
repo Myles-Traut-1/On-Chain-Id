@@ -3,9 +3,37 @@
 import { useState, useEffect } from "react";
 import { useManageKeys } from "../hooks/useManageKeys";
 
+import ErrorAlert from "./ErrorAlert";
+
 export default function AddKeys({ idAddress, onKeyAdded }: { idAddress: string, onKeyAdded?: () => void }) {
     const { loading, error, addManagementKey } = useManageKeys(onKeyAdded);
     const [keyAddress, setKeyAddress] = useState("");
+
+    const [dismissedError, setDismissedError] = useState(false);
+
+    useEffect(() => {
+        if (error) {
+            setDismissedError(false);
+        }
+    }, [error]);
+
+    if(loading){
+    return(<div>
+        ...Loading
+    </div>)
+    }
+
+    if (error && !dismissedError) {
+            return (
+                <div className="w-full">
+                    <ErrorAlert
+                        error={error}
+                        onDismiss={() => setDismissedError(true)}
+                        showDetails={false}
+                    />
+                </div>
+            );
+        }
 
     return (
         <div className="px-4 sm:px-6 pb-6 space-y-4">

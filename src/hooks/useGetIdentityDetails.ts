@@ -80,13 +80,9 @@ export function useGetIdentityDetails(
 
       const identity = await Identity.at(idAddress, { provider });
 
-      console.log("getManagementKeys called, idAddress:", idAddress);
-
       const managementKeys = await identity.getKeysByPurpose(
         IdentitySDK.utils.enums.KeyPurpose.MANAGEMENT,
       );
-
-      console.log("fetched keys:", managementKeys);
 
       setManagementKeys(managementKeys);
     } catch (err) {
