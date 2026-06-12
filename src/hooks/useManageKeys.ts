@@ -21,13 +21,20 @@ import type {
   UseWaitForTransactionReceiptReturnType,
 } from "wagmi";
 
-export function useManageKeys(onKeyAdded?: () => void) {
+export function useManageKeys(
+  onKeyAdded?: () => void,
+  onKeyRemoved?: () => void,
+) {
   const publicClient: UsePublicClientReturnType = usePublicClient();
   const { error, handleError, clearError } = useErrorHandler();
   const { writeContractAsync } = useWriteContract();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
+
+  const [pendingOp, setPendingOp] = useState<"addKey" | "removeKey" | null>(
+    null,
+  );
 
   const managementKeyPurpose: KeyPurpose.MANAGEMENT =
     IdentitySDK.utils.enums.KeyPurpose.MANAGEMENT;
@@ -49,12 +56,20 @@ export function useManageKeys(onKeyAdded?: () => void) {
     ) {
       setLoading(false);
       setTxHash(undefined);
-      onKeyAdded?.();
+      if (pendingOp === "addKey") {
+        onKeyAdded?.();
+        setPendingOp(null);
+      }
+      if (pendingOp === "removeKey") {
+        onKeyRemoved?.();
+        setPendingOp(null);
+      }
     }
 
     if (isCurrentReceipt && receipt.isError) {
       handleError(receipt.error);
       setLoading(false);
+      setPendingOp(null);
       setTxHash(undefined);
     }
   }, [
@@ -65,6 +80,7 @@ export function useManageKeys(onKeyAdded?: () => void) {
     receipt.error,
     handleError,
     onKeyAdded,
+    pendingOp,
   ]);
 
   const addManagementKey = async (idAddress: string, keyAddress: string) => {
@@ -114,6 +130,26 @@ export function useManageKeys(onKeyAdded?: () => void) {
         ],
       });
       setTxHash(tx);
+      setPendingOp("addKey");
+    } catch (err) {
+      handleError(err);
+      throw err;
+    }
+  };
+
+  const removeManagementKey = async (idAddress: string, key: `0x{string}`) => {
+    clearError();
+    setLoading(true);
+
+    try {
+      const tx = await writeContractAsync({
+        address: idAddress as `0x${string}`,
+        abi: identityAbi,
+        functionName: "removeKey",
+        args: [key as `0x${string}`, BigInt(managementKeyPurpose)],
+      });
+      setTxHash(tx);
+      setPendingOp("removeKey");
     } catch (err) {
       handleError(err);
       throw err;
@@ -122,6 +158,7 @@ export function useManageKeys(onKeyAdded?: () => void) {
 
   return {
     addManagementKey,
+    removeManagementKey,
     loading,
     error,
     txHash,

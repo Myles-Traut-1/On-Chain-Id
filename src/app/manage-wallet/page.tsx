@@ -6,6 +6,7 @@ import AddKeys from "../../components/AddKeys";
 import { useIdentity } from "../../hooks/useIdentity";
 import { useGetIdentityDetails } from "../../hooks/useGetIdentityDetails";
 import { useManageWallet } from "../../hooks/useManageWallet";
+import { useManageKeys } from "../../hooks/useManageKeys";
 import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,11 @@ export default function ManageWalletPage() {
 
     const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
     const [initialConnectionWindowPassed, setInitialConnectionWindowPassed] = useState(false);
+
+    const setExpandedSectionDebug = (val: 'wallet' | 'key' | 'purpose' | null) => {
+    console.trace("setExpandedSection called with:", val);
+    setExpandedSection(val);
+};
 
     const onLinked = useCallback(() => {
         refetchWallets(identity);
@@ -52,6 +58,14 @@ export default function ManageWalletPage() {
             getManagementKeys();
         }, 20000);
     }, [getManagementKeys]);
+
+    const handleKeyRemoved = useCallback(() => {
+        setTimeout(() => {
+            getManagementKeys();
+        }, 20000);
+    }, [getManagementKeys]);
+
+    const { removeManagementKey } = useManageKeys(undefined, handleKeyRemoved);
 
     if (verifyLoading || !verified) {
         return (
@@ -91,7 +105,7 @@ export default function ManageWalletPage() {
                         <div className="relative bg-slate-900 rounded-2xl border border-purple-600/40 shadow-lg overflow-hidden">
                             {/* Header */}
                             <button
-                                onClick={() => setExpandedSection(expandedSection === 'wallet' ? null : 'wallet')}
+                                onClick={() => setExpandedSectionDebug(expandedSection === 'wallet' ? null : 'wallet')}
                                 className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-slate-800/50 transition-colors duration-200"
                             >
                                 <div className="flex items-center gap-3">
@@ -134,10 +148,17 @@ export default function ManageWalletPage() {
                                                 ) : (
                                                     <ul className="space-y-2 overflow-y-auto flex-1">
                                                         {managementKeys.map((key, index) => (
-                                                            console.log("rendering key:", key),
                                                             <li key={index} className="text-xs sm:text-sm font-mono text-cyan-300 bg-slate-900/50 rounded-lg p-3 flex items-start gap-2">
                                                                 <span className="shrink-0 text-emerald-400">✓</span>
                                                                 <span className="block flex-1 min-w-0 break-all whitespace-normal">{key.key}</span>
+                                                                {managementKeys.length > 1 && (
+                                                                    <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
+                                                                        onClick={() => {
+                                                                            removeManagementKey(identity, key.key as `0x{string}`);
+                                                                        }}>
+                                                                        Remove
+                                                                    </button>
+                                                                )}
                                                             </li>
                                                         ))}
                                                     </ul>
@@ -156,7 +177,7 @@ export default function ManageWalletPage() {
                         <div className="relative bg-slate-900 rounded-2xl border border-indigo-600/40 shadow-lg overflow-hidden">
                             {/* Header */}
                             <button
-                                onClick={() => setExpandedSection(expandedSection === 'key' ? null : 'key')}
+                                onClick={() => setExpandedSectionDebug(expandedSection === 'key' ? null : 'key')}
                                 className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-slate-800/50 transition-colors duration-200"
                             >
                                 <div className="flex items-center gap-3">
@@ -178,12 +199,12 @@ export default function ManageWalletPage() {
                             </button>
 
                             {/* Content */}
-                            {expandedSection === 'key' && (
+                            <div className={expandedSection === 'key' ? 'block' : 'hidden'}>
                                 <>
                                     <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-indigo-500/0 via-indigo-500/40 to-indigo-500/0" />
                                     <AddKeys idAddress={identity} onKeyAdded={handleKeyAdded} />
                                 </>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </div>
