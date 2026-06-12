@@ -49,13 +49,10 @@ export function useManageKeys(
     const isCurrentReceipt =
       !!txHash && receipt.data?.transactionHash === txHash;
 
-    if (
-      isCurrentReceipt &&
-      receipt.isSuccess &&
-      receipt.data?.status === "success"
-    ) {
+    if (isCurrentReceipt && receipt.status === "success") {
       setLoading(false);
       setTxHash(undefined);
+
       if (pendingOp === "addKey") {
         onKeyAdded?.();
         setPendingOp(null);
@@ -66,7 +63,7 @@ export function useManageKeys(
       }
     }
 
-    if (isCurrentReceipt && receipt.isError) {
+    if (isCurrentReceipt && receipt.status === "error") {
       handleError(receipt.error);
       setLoading(false);
       setPendingOp(null);
@@ -74,13 +71,13 @@ export function useManageKeys(
     }
   }, [
     txHash,
-    receipt.isSuccess,
-    receipt.isError,
+    receipt.status,
     receipt.data,
     receipt.error,
-    handleError,
-    onKeyAdded,
     pendingOp,
+    onKeyAdded,
+    onKeyRemoved,
+    handleError,
   ]);
 
   const addManagementKey = async (idAddress: string, keyAddress: string) => {
@@ -133,6 +130,7 @@ export function useManageKeys(
       setPendingOp("addKey");
     } catch (err) {
       handleError(err);
+      setLoading(false);
       throw err;
     }
   };
@@ -152,6 +150,7 @@ export function useManageKeys(
       setPendingOp("removeKey");
     } catch (err) {
       handleError(err);
+      setLoading(false);
       throw err;
     }
   };
@@ -163,7 +162,7 @@ export function useManageKeys(
     error,
     txHash,
     receipt: receipt.data,
-    isConfirming: receipt.isLoading,
-    isConfirmed: receipt.isSuccess,
+    isConfirming: receipt.status === "pending",
+    isConfirmed: receipt.status === "success",
   };
 }

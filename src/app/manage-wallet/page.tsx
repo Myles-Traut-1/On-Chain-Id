@@ -18,13 +18,11 @@ export default function ManageWalletPage() {
     const { identity, refetchWallets } = useIdentity(address);
     const { verified, loading: verifyLoading, managementKeys, getManagementKeys } = useGetIdentityDetails(address, identity);
 
-    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
+    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | null>(null);
     const [initialConnectionWindowPassed, setInitialConnectionWindowPassed] = useState(false);
 
-    const setExpandedSectionDebug = (val: 'wallet' | 'key' | 'purpose' | null) => {
-    console.trace("setExpandedSection called with:", val);
-    setExpandedSection(val);
-};
+    const [removingKey, setRemovingKey] = useState<string | null>(null);
+
 
     const onLinked = useCallback(() => {
         refetchWallets(identity);
@@ -65,8 +63,14 @@ export default function ManageWalletPage() {
         }, 20000);
     }, [getManagementKeys]);
 
-    const { removeManagementKey } = useManageKeys(undefined, handleKeyRemoved);
+    const handleRemove = async (keyToRemove: `0x{string}`) => {
+        setRemovingKey(keyToRemove);
+        removeManagementKey(identity, keyToRemove);
+        
+    };
 
+    const { loading: keysLoading, isConfirming, removeManagementKey } = useManageKeys(undefined, handleKeyRemoved);
+    
     if (verifyLoading || !verified) {
         return (
             <div className="h-[calc(100vh-80px)] bg-slate-950 overflow-hidden flex items-center justify-center px-6">
@@ -105,7 +109,7 @@ export default function ManageWalletPage() {
                         <div className="relative bg-slate-900 rounded-2xl border border-purple-600/40 shadow-lg overflow-hidden">
                             {/* Header */}
                             <button
-                                onClick={() => setExpandedSectionDebug(expandedSection === 'wallet' ? null : 'wallet')}
+                                onClick={() => setExpandedSection(expandedSection === 'wallet' ? null : 'wallet')}
                                 className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-slate-800/50 transition-colors duration-200"
                             >
                                 <div className="flex items-center gap-3">
@@ -152,11 +156,14 @@ export default function ManageWalletPage() {
                                                                 <span className="shrink-0 text-emerald-400">✓</span>
                                                                 <span className="block flex-1 min-w-0 break-all whitespace-normal">{key.key}</span>
                                                                 {managementKeys.length > 1 && (
-                                                                    <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
-                                                                        onClick={() => {
-                                                                            removeManagementKey(identity, key.key as `0x{string}`);
-                                                                        }}>
-                                                                        Remove
+                                                                    <button
+                                                                        disabled={removingKey === key.key && (keysLoading || isConfirming)}
+                                                                        className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        onClick={() => handleRemove(key.key as `0x{string}`)}
+                                                                    >
+                                                                        {removingKey === key.key && keysLoading && 'Confirming...'}
+                                                                        {removingKey === key.key && !keysLoading && isConfirming && 'Mining...'}
+                                                                        {!(removingKey === key.key && (keysLoading || isConfirming)) && 'Remove'}
                                                                     </button>
                                                                 )}
                                                             </li>
@@ -177,7 +184,7 @@ export default function ManageWalletPage() {
                         <div className="relative bg-slate-900 rounded-2xl border border-indigo-600/40 shadow-lg overflow-hidden">
                             {/* Header */}
                             <button
-                                onClick={() => setExpandedSectionDebug(expandedSection === 'key' ? null : 'key')}
+                                onClick={() => setExpandedSection(expandedSection === 'key' ? null : 'key')}
                                 className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-slate-800/50 transition-colors duration-200"
                             >
                                 <div className="flex items-center gap-3">
@@ -199,12 +206,12 @@ export default function ManageWalletPage() {
                             </button>
 
                             {/* Content */}
-                            <div className={expandedSection === 'key' ? 'block' : 'hidden'}>
+                            {expandedSection === 'key' && (
                                 <>
                                     <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-indigo-500/0 via-indigo-500/40 to-indigo-500/0" />
                                     <AddKeys idAddress={identity} onKeyAdded={handleKeyAdded} />
                                 </>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>

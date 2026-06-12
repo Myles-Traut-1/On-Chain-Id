@@ -17,12 +17,6 @@ export default function AddKeys({ idAddress, onKeyAdded }: { idAddress: string, 
         }
     }, [error]);
 
-    if(loading){
-    return(<div>
-        ...Loading
-    </div>)
-    }
-
     if (error && !dismissedError) {
             return (
                 <div className="w-full">
@@ -34,6 +28,21 @@ export default function AddKeys({ idAddress, onKeyAdded }: { idAddress: string, 
                 </div>
             );
         }
+
+    if (loading) {
+        return (
+            <div className="w-full h-full flex flex-col items-center justify-center py-12">
+                <div className="flex gap-2 mb-4">
+                    <span className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                    <span className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                    <span className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-bounce" />
+                </div>
+                <p className="text-sm font-semibold text-purple-400 uppercase tracking-widest">
+                    Adding Key…
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="px-4 sm:px-6 pb-6 space-y-4">
