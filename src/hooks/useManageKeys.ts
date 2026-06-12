@@ -52,15 +52,6 @@ export function useManageKeys(
     if (isCurrentReceipt && receipt.status === "success") {
       setLoading(false);
       setTxHash(undefined);
-
-      if (pendingOp === "addKey") {
-        onKeyAdded?.();
-        setPendingOp(null);
-      }
-      if (pendingOp === "removeKey") {
-        onKeyRemoved?.();
-        setPendingOp(null);
-      }
     }
 
     if (isCurrentReceipt && receipt.status === "error") {
@@ -69,16 +60,16 @@ export function useManageKeys(
       setPendingOp(null);
       setTxHash(undefined);
     }
-  }, [
-    txHash,
-    receipt.status,
-    receipt.data,
-    receipt.error,
-    pendingOp,
-    onKeyAdded,
-    onKeyRemoved,
-    handleError,
-  ]);
+  }, [txHash, receipt.status, receipt.data, receipt.error, handleError]);
+
+  useEffect(() => {
+    if (pendingOp === "addKey") {
+      onKeyAdded?.();
+    }
+    if (pendingOp === "removeKey") {
+      onKeyRemoved?.();
+    }
+  }, [pendingOp, onKeyAdded, onKeyRemoved]);
 
   const addManagementKey = async (idAddress: string, keyAddress: string) => {
     const { valid: walletAndClientValid, error: walletAndClientError } =
