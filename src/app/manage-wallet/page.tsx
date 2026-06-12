@@ -1,32 +1,36 @@
 'use client';
 
 import LinkWallet from "../../components/LinkWallet";
+import AddKeys from "../../components/AddKeys";
 
 import { useIdentity } from "../../hooks/useIdentity";
 import { useGetIdentityDetails } from "../../hooks/useGetIdentityDetails";
-import { useManageWallet } from "../../hooks/useLinkWallet";
+import { useManageWallet } from "../../hooks/useManageWallet";
+import { useManageKeys } from "../../hooks/useManageKeys";
 import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
 
+
 export default function ManageWalletPage() {
     const router = useRouter();
     const { address, status, isConnecting, isReconnecting } = useAccount();
-    const { identity, linkedWallets, refetchWallets } = useIdentity(address);
-    const { verified, loading: verifyLoading } = useGetIdentityDetails(address, identity);
+    const { identity, refetchWallets } = useIdentity(address);
+    const { verified, loading: verifyLoading, managementKeys, getManagementKeys } = useGetIdentityDetails(address, identity);
+
+    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
+    const [initialConnectionWindowPassed, setInitialConnectionWindowPassed] = useState(false);
+
+    const setExpandedSectionDebug = (val: 'wallet' | 'key' | 'purpose' | null) => {
+    console.trace("setExpandedSection called with:", val);
+    setExpandedSection(val);
+};
 
     const onLinked = useCallback(() => {
         refetchWallets(identity);
     }, [refetchWallets, identity]);
 
-    const onUnlinked = useCallback(() => {
-        refetchWallets(identity);
-    }, [refetchWallets, identity]);
-
-
-    const { unlinkWallet } = useManageWallet(onLinked, onUnlinked);
-    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'purpose' | null>('wallet');
-    const [initialConnectionWindowPassed, setInitialConnectionWindowPassed] = useState(false);
+    useManageWallet(onLinked, undefined);
 
     useEffect(() => {
         // Give wallet providers a brief window to restore session after refresh.
@@ -48,6 +52,20 @@ export default function ManageWalletPage() {
             router.replace('/');
         }
     }, [initialConnectionWindowPassed, isConnecting, isReconnecting, status, verified, verifyLoading, router]);
+
+    const handleKeyAdded = useCallback(() => {
+        setTimeout(() => {
+            getManagementKeys();
+        }, 20000);
+    }, [getManagementKeys]);
+
+    const handleKeyRemoved = useCallback(() => {
+        setTimeout(() => {
+            getManagementKeys();
+        }, 20000);
+    }, [getManagementKeys]);
+
+    const { removeManagementKey } = useManageKeys(undefined, handleKeyRemoved);
 
     if (verifyLoading || !verified) {
         return (
@@ -87,7 +105,7 @@ export default function ManageWalletPage() {
                         <div className="relative bg-slate-900 rounded-2xl border border-purple-600/40 shadow-lg overflow-hidden">
                             {/* Header */}
                             <button
-                                onClick={() => setExpandedSection(expandedSection === 'wallet' ? null : 'wallet')}
+                                onClick={() => setExpandedSectionDebug(expandedSection === 'wallet' ? null : 'wallet')}
                                 className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-slate-800/50 transition-colors duration-200"
                             >
                                 <div className="flex items-center gap-3">
@@ -120,32 +138,32 @@ export default function ManageWalletPage() {
                                                 <LinkWallet onLinked={onLinked} />
                                             </div>
 
-                                            {/* Linked Wallets List */}
-                                            {linkedWallets.length > 0 && (
-                                                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 flex flex-col">
-                                                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                                                        Linked Wallets ({linkedWallets.length})
-                                                    </h3>
+                                            {/* Management Keys List */}
+                                            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 flex flex-col">
+                                                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
+                                                    Management Keys ({managementKeys.length})
+                                                </h3>
+                                                {managementKeys.length === 0 ? (
+                                                    <p className="text-xs text-slate-500 italic">No management keys found.</p>
+                                                ) : (
                                                     <ul className="space-y-2 overflow-y-auto flex-1">
-                                                        {linkedWallets.map((wallet, index) => (
-                                                            <li key={index} className="text-xs sm:text-sm font-mono text-cyan-300 bg-slate-900/50 rounded-lg p-3 flex items-start justify-between">
-                                                                <span className="flex items-center gap-2 flex-1 min-w-0">
-                                                                    <span className="shrink-0 text-emerald-400">✓</span>
-                                                                    <span className="block flex-1 min-w-0 break-all whitespace-normal">{wallet}</span>
-                                                                </span>
-                                                                {wallet !== address && (
+                                                        {managementKeys.map((key, index) => (
+                                                            <li key={index} className="text-xs sm:text-sm font-mono text-cyan-300 bg-slate-900/50 rounded-lg p-3 flex items-start gap-2">
+                                                                <span className="shrink-0 text-emerald-400">✓</span>
+                                                                <span className="block flex-1 min-w-0 break-all whitespace-normal">{key.key}</span>
+                                                                {managementKeys.length > 1 && (
                                                                     <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
                                                                         onClick={() => {
-                                                                            unlinkWallet(wallet);
+                                                                            removeManagementKey(identity, key.key as `0x{string}`);
                                                                         }}>
-                                                                        Unlink
+                                                                        Remove
                                                                     </button>
                                                                 )}
                                                             </li>
                                                         ))}
                                                     </ul>
-                                                </div>
-                                            )}
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </>
@@ -159,7 +177,7 @@ export default function ManageWalletPage() {
                         <div className="relative bg-slate-900 rounded-2xl border border-indigo-600/40 shadow-lg overflow-hidden">
                             {/* Header */}
                             <button
-                                onClick={() => setExpandedSection(expandedSection === 'key' ? null : 'key')}
+                                onClick={() => setExpandedSectionDebug(expandedSection === 'key' ? null : 'key')}
                                 className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-slate-800/50 transition-colors duration-200"
                             >
                                 <div className="flex items-center gap-3">
@@ -181,47 +199,12 @@ export default function ManageWalletPage() {
                             </button>
 
                             {/* Content */}
-                            {expandedSection === 'key' && (
+                            <div className={expandedSection === 'key' ? 'block' : 'hidden'}>
                                 <>
                                     <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-indigo-500/0 via-indigo-500/40 to-indigo-500/0" />
-                                    <div className="px-4 sm:px-6 pb-6 space-y-4">
-                                        {/* Key Input */}
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                                                Address
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="0x..."
-                                                className="w-full px-4 py-3 rounded-lg text-sm font-mono bg-slate-800/50 border border-slate-700/50 text-cyan-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                                            />
-                                        </div>
-
-                                        {/* Key Type Selection */}
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                                                Key Type
-                                            </label>
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <button className="px-3 py-2 text-xs font-medium rounded-lg border-2 border-indigo-500 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition-colors">
-                                                    Management
-                                                </button>
-                                                <button className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-300 transition-colors">
-                                                    Action
-                                                </button>
-                                                <button className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-300 transition-colors">
-                                                    Claim
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Submit Button */}
-                                        <button className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-all duration-200">
-                                            Add Key
-                                        </button>
-                                    </div>
+                                    <AddKeys idAddress={identity} onKeyAdded={handleKeyAdded} />
                                 </>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </div>
