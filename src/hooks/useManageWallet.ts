@@ -11,6 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import { addressZero } from "../constants/constants";
 import { validateAddress, validateWalletAndClient } from "../utils/utils";
+import { toast } from "sonner";
 
 import type {
   UsePublicClientReturnType,
@@ -44,15 +45,15 @@ export function useManageWallet(
       receipt.data?.status === "success"
     ) {
       setLoading(false);
+      setTxHash(undefined);
+
       if (pendingOp === "link") {
-        onLinked?.();
-        setPendingOp(null);
-      } else if (pendingOp === "unlink") {
-        onUnlinked?.();
-        setPendingOp(null);
+        toast.success("Wallet linked successfully!");
       }
 
-      setTxHash(undefined);
+      if (pendingOp === "unlink") {
+        toast.success("Wallet unlinked successfully!");
+      }
     }
 
     if (isCurrentReceipt && receipt.isError) {
@@ -68,10 +69,16 @@ export function useManageWallet(
     receipt.data,
     receipt.error,
     handleError,
-    onLinked,
-    onUnlinked,
-    pendingOp,
   ]);
+
+  useEffect(() => {
+    if (pendingOp === "link") {
+      onLinked?.();
+    }
+    if (pendingOp === "unlink") {
+      onUnlinked?.();
+    }
+  }, [pendingOp, onLinked, onUnlinked]);
 
   const linkWallet = async (walletAddress: string) => {
     const { valid: walletAndClientValid, error: walletAndClientError } =

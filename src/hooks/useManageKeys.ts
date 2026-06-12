@@ -9,6 +9,7 @@ import {
 import { useState, useEffect } from "react";
 import { validateAddress, validateWalletAndClient } from "../utils/utils";
 import { useErrorHandler } from "./useErrorHandler";
+import { toast } from "sonner";
 
 import { IdentitySDK } from "@onchain-id/identity-sdk";
 import {
@@ -52,6 +53,14 @@ export function useManageKeys(
     if (isCurrentReceipt && receipt.status === "success") {
       setLoading(false);
       setTxHash(undefined);
+
+      if (pendingOp === "addKey") {
+        toast.success("Management key added successfully!");
+      }
+
+      if (pendingOp === "removeKey") {
+        toast.success("Management key removed successfully!");
+      }
     }
 
     if (isCurrentReceipt && receipt.status === "error") {
