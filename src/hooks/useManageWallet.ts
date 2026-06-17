@@ -162,11 +162,11 @@ export function useManageWallet(
   return {
     linkWallet,
     unlinkWallet,
-    loading: loading || receipt.isLoading,
+    loading,
     error,
     txHash,
     receipt: receipt.data,
-    isConfirming: receipt.isLoading,
-    isConfirmed: receipt.isSuccess,
+    isConfirming: receipt.status === "pending",
+    isConfirmed: receipt.status === "success",
   };
 }
