@@ -36,7 +36,7 @@ export function useManageWallet(
     });
 
   useEffect(() => {
-    const isCurrentReceipt =
+    const isCurrentReceipt: boolean =
       !!txHash && receipt.data?.transactionHash === txHash;
 
     if (
@@ -49,10 +49,12 @@ export function useManageWallet(
 
       if (pendingOp === "link") {
         toast.success("Wallet linked successfully!");
+        onLinked?.();
       }
 
       if (pendingOp === "unlink") {
         toast.success("Wallet unlinked successfully!");
+        onUnlinked?.();
       }
     }
 
@@ -69,16 +71,19 @@ export function useManageWallet(
     receipt.data,
     receipt.error,
     handleError,
+    onLinked,
+    onUnlinked,
+    pendingOp,
   ]);
 
-  useEffect(() => {
-    if (pendingOp === "link") {
-      onLinked?.();
-    }
-    if (pendingOp === "unlink") {
-      onUnlinked?.();
-    }
-  }, [pendingOp, onLinked, onUnlinked]);
+  // useEffect(() => {
+  //   if (pendingOp === "link") {
+  //     onLinked?.();
+  //   }
+  //   if (pendingOp === "unlink") {
+  //     onUnlinked?.();
+  //   }
+  // }, [pendingOp, onLinked, onUnlinked]);
 
   const linkWallet = async (walletAddress: string) => {
     const { valid: walletAndClientValid, error: walletAndClientError } =

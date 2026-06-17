@@ -22,9 +22,10 @@ export default function Home() {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const onUnlinked = useCallback(() => {
-      refetchWallets(identity);
+    setTimeout(() => {
+        refetchWallets(identity);
+    }, 10000);    
   }, [refetchWallets, identity]);
-
 
   const { unlinkWallet } = useManageWallet(undefined, onUnlinked);
 
