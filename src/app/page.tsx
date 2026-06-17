@@ -16,10 +16,12 @@ export default function Home() {
   const { address, isConnected } = useAccount();
   const { identity, linkedWallets, refetchWallets, loading, error, refetch } = useIdentity(address);
 
-  const { verified } = useGetIdentityDetails(address, identity);
+  const { verified, loading: verifiedLoading } = useGetIdentityDetails(address, identity);
 
   const [dismissedError, setDismissedError] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+
+  const [removingWallet, setRemovingWallet] = useState<string | null>(null);
 
   const onUnlinked = useCallback(() => {
     setTimeout(() => {
@@ -27,8 +29,13 @@ export default function Home() {
     }, 10000);    
   }, [refetchWallets, identity]);
 
-  const { unlinkWallet } = useManageWallet(undefined, onUnlinked);
+    const handleUnlinkWallet = (walletAddress: string) => {
+      setRemovingWallet(walletAddress);
+      unlinkWallet(walletAddress);
+  };
 
+  const { unlinkWallet, loading: unlinkLoading, isConfirming } = useManageWallet(undefined, onUnlinked);
+  
   useEffect(() => {
     if (error) {
       setDismissedError(false);
@@ -72,11 +79,18 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {loading ? (
+            {loading || verifiedLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="w-full max-w-2xl">
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-64 bg-slate-800 rounded-3xl" />
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    {/* Spinner with text */}
+                    <div className="flex items-center space-x-3">
+                      <div className="relative w-12 h-12">
+                        <div className="absolute inset-0 border-4 border-slate-700 rounded-full" />
+                        <div className="absolute inset-0 border-4 border-transparent border-t-blue-500 rounded-full animate-spin" />
+                      </div>
+                      <span className="text-lg text-slate-400">Loading</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -211,10 +225,13 @@ export default function Home() {
                                         </span>
                                         {wallet !== address && verified && (
                                             <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
-                                                onClick={() => {
-                                                    unlinkWallet(wallet);
-                                                }}>
-                                                Unlink
+                                                disabled={removingWallet === wallet && (unlinkLoading || isConfirming)}
+                                            onClick={() =>
+                                                    handleUnlinkWallet(wallet)
+                                                }>
+                                                 {wallet === removingWallet && unlinkLoading && 'Confirming...'}
+                                                {wallet === removingWallet && !unlinkLoading && isConfirming && 'Confirmed'}
+                                                {!(wallet === removingWallet && (unlinkLoading || isConfirming)) && 'Unlink'}
                                             </button>
                                         )}
                                     </li>

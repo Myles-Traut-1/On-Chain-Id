@@ -82,14 +82,6 @@ export function useManageKeys(
     pendingOp,
   ]);
 
-  // useEffect(() => {
-  //   if (pendingOp === "addKey") {
-  //     onKeyAdded?.();
-  //   }
-  //   if (pendingOp === "removeKey") {
-  //   }
-  // }, [pendingOp, onKeyAdded, onKeyRemoved]);
-
   const addManagementKey = async (idAddress: string, keyAddress: string) => {
     const { valid: walletAndClientValid, error: walletAndClientError } =
       validateWalletAndClient(keyAddress, publicClient);
