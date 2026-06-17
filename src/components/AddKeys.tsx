@@ -6,8 +6,13 @@ import { useManageKeys } from "../hooks/useManageKeys";
 import ErrorAlert from "./ErrorAlert";
 
 export default function AddKeys({ idAddress, onKeyAdded }: { idAddress: string, onKeyAdded?: () => void }) {
-    const { loading, error, addManagementKey } = useManageKeys(onKeyAdded, undefined);
     const [keyAddress, setKeyAddress] = useState("");
+    const handleLinked = () => {
+        setKeyAddress("");
+        onKeyAdded?.();
+    };
+    const { loading, error, addManagementKey } = useManageKeys(handleLinked, undefined);
+    
 
     const [dismissedError, setDismissedError] = useState(false);
 

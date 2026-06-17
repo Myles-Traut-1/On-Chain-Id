@@ -76,15 +76,6 @@ export function useManageWallet(
     pendingOp,
   ]);
 
-  // useEffect(() => {
-  //   if (pendingOp === "link") {
-  //     onLinked?.();
-  //   }
-  //   if (pendingOp === "unlink") {
-  //     onUnlinked?.();
-  //   }
-  // }, [pendingOp, onLinked, onUnlinked]);
-
   const linkWallet = async (walletAddress: string) => {
     const { valid: walletAndClientValid, error: walletAndClientError } =
       validateWalletAndClient(walletAddress, publicClient);

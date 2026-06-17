@@ -12,7 +12,7 @@ export default function LinkWallet({ onLinked }: LinkWalletProps) {
         setInputAddress("");
         onLinked?.();
     };
-    const { linkWallet, loading, error } = useManageWallet(handleLinked);
+    const { linkWallet, loading, error } = useManageWallet(handleLinked, undefined);
     const [dismissedError, setDismissedError] = useState(false);
 
     useEffect(() => {

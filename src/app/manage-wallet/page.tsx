@@ -71,7 +71,12 @@ export default function ManageWalletPage() {
         
     };
 
-    const { loading: keysLoading, isConfirming, removeManagementKey } = useManageKeys(undefined, handleKeyRemoved);
+    const { loading: keysLoading, isConfirming, receipt, removeManagementKey } = useManageKeys(undefined, handleKeyRemoved);
+
+    useEffect(() => {
+        if(receipt === undefined) return;
+        console.log(receipt!.status);
+    }, [receipt]);
 
     
     if (verifyLoading || !verified) {
@@ -165,7 +170,7 @@ export default function ManageWalletPage() {
                                                                         onClick={() => handleRemove(key.key as `0x{string}`)}
                                                                     >
                                                                         {removingKey === key.key && keysLoading && 'Confirming...'}
-                                                                        {removingKey === key.key && !keysLoading && isConfirming && 'Mining...'}
+                                                                        {removingKey === key.key && !keysLoading && isConfirming && 'Confirmed'}
                                                                         {!(removingKey === key.key && (keysLoading || isConfirming)) && 'Remove'}
                                                                     </button>
                                                                 )}

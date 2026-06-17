@@ -56,10 +56,12 @@ export function useManageKeys(
 
       if (pendingOp === "addKey") {
         toast.success("Management key added successfully!");
+        onKeyAdded?.();
       }
 
       if (pendingOp === "removeKey") {
         toast.success("Management key removed successfully!");
+        onKeyRemoved?.();
       }
     }
 
@@ -69,16 +71,24 @@ export function useManageKeys(
       setPendingOp(null);
       setTxHash(undefined);
     }
-  }, [txHash, receipt.status, receipt.data, receipt.error, handleError]);
+  }, [
+    txHash,
+    receipt.status,
+    receipt.data,
+    receipt.error,
+    handleError,
+    onKeyAdded,
+    onKeyRemoved,
+    pendingOp,
+  ]);
 
-  useEffect(() => {
-    if (pendingOp === "addKey") {
-      onKeyAdded?.();
-    }
-    if (pendingOp === "removeKey") {
-      onKeyRemoved?.();
-    }
-  }, [pendingOp, onKeyAdded, onKeyRemoved]);
+  // useEffect(() => {
+  //   if (pendingOp === "addKey") {
+  //     onKeyAdded?.();
+  //   }
+  //   if (pendingOp === "removeKey") {
+  //   }
+  // }, [pendingOp, onKeyAdded, onKeyRemoved]);
 
   const addManagementKey = async (idAddress: string, keyAddress: string) => {
     const { valid: walletAndClientValid, error: walletAndClientError } =
