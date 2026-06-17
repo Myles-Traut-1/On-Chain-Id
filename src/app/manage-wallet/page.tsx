@@ -25,7 +25,9 @@ export default function ManageWalletPage() {
 
 
     const onLinked = useCallback(() => {
-        refetchWallets(identity);
+        setTimeout(() => {
+            refetchWallets(identity);
+        }, 10000);    
     }, [refetchWallets, identity]);
 
     useManageWallet(onLinked, undefined);
@@ -54,13 +56,13 @@ export default function ManageWalletPage() {
     const handleKeyAdded = useCallback(() => {
         setTimeout(() => {
             getManagementKeys();
-        }, 20000);
+        }, 10000);
     }, [getManagementKeys]);
 
     const handleKeyRemoved = useCallback(() => {
         setTimeout(() => {
             getManagementKeys();
-        }, 20000);
+        }, 10000);
     }, [getManagementKeys]);
 
     const handleRemove = async (keyToRemove: `0x{string}`) => {
@@ -70,6 +72,7 @@ export default function ManageWalletPage() {
     };
 
     const { loading: keysLoading, isConfirming, removeManagementKey } = useManageKeys(undefined, handleKeyRemoved);
+
     
     if (verifyLoading || !verified) {
         return (
