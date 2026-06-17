@@ -18,7 +18,7 @@ export default function ManageWalletPage() {
     const { identity, refetchWallets } = useIdentity(address);
     const { verified, loading: verifyLoading, managementKeys, getManagementKeys } = useGetIdentityDetails(address, identity);
 
-    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | null>(null);
+    const [expandedSection, setExpandedSection] = useState<'wallet' | 'key' | 'management' | null>(null);
     const [initialConnectionWindowPassed, setInitialConnectionWindowPassed] = useState(false);
 
     const [removingKey, setRemovingKey] = useState<string | null>(null);
@@ -143,43 +143,74 @@ export default function ManageWalletPage() {
                                 <>
                                     <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-purple-500/0 via-purple-500/40 to-purple-500/0" />
                                     <div className="px-4 sm:px-6 pb-6">
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                            {/* Input Section */}
-                                            <div>
-                                                <h3 className="text-sm font-semibold text-white mb-4">Add New Wallet</h3>
-                                                <LinkWallet onLinked={onLinked} />
-                                            </div>
+                                        <h3 className="text-sm font-semibold text-white mb-4">Add New Wallet</h3>
+                                        <LinkWallet onLinked={onLinked} />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
 
-                                            {/* Management Keys List */}
-                                            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 flex flex-col">
-                                                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                                                    Management Keys ({managementKeys.length})
-                                                </h3>
-                                                {managementKeys.length === 0 ? (
-                                                    <p className="text-xs text-slate-500 italic">No management keys found.</p>
-                                                ) : (
-                                                    <ul className="space-y-2 overflow-y-auto flex-1">
-                                                        {managementKeys.map((key, index) => (
-                                                            <li key={index} className="text-xs sm:text-sm font-mono text-cyan-300 bg-slate-900/50 rounded-lg p-3 flex items-start gap-2">
-                                                                <span className="shrink-0 text-emerald-400">✓</span>
-                                                                <span className="block flex-1 min-w-0 break-all whitespace-normal">{key.key}</span>
-                                                                {managementKeys.length > 1 && (
-                                                                    <button
-                                                                        disabled={removingKey === key.key && (keysLoading || isConfirming)}
-                                                                        className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                        onClick={() => handleRemove(key.key as `0x{string}`)}
-                                                                    >
-                                                                        {removingKey === key.key && keysLoading && 'Confirming...'}
-                                                                        {removingKey === key.key && !keysLoading && isConfirming && 'Confirmed'}
-                                                                        {!(removingKey === key.key && (keysLoading || isConfirming)) && 'Remove'}
-                                                                    </button>
-                                                                )}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                )}
-                                            </div>
-                                        </div>
+                    {/* Management Keys Section */}
+                    <div className="relative group">
+                        <div className="absolute inset-0 bg-linear-to-b from-emerald-600 to-teal-700 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+                        <div className="relative bg-slate-900 rounded-2xl border border-emerald-600/40 shadow-lg overflow-hidden">
+                            {/* Header */}
+                            <button
+                                onClick={() => setExpandedSection(expandedSection === 'management' ? null : 'management')}
+                                className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-slate-800/50 transition-colors duration-200"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center text-lg shrink-0">
+                                        🛡️
+                                    </div>
+                                    <div className="text-left">
+                                        <h2 className="text-lg sm:text-xl font-bold text-white">
+                                            Management Keys
+                                        </h2>
+                                        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                                            View and manage your identity's keys
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <span className="text-xs sm:text-sm text-emerald-400 font-semibold">
+                                        {managementKeys.length}
+                                    </span>
+                                    <div className={`text-2xl transition-transform duration-300 ${expandedSection === 'management' ? 'rotate-180' : ''}`}>
+                                        ▼
+                                    </div>
+                                </div>
+                            </button>
+
+                            {/* Content */}
+                            {expandedSection === 'management' && (
+                                <>
+                                    <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-emerald-500/0 via-emerald-500/40 to-emerald-500/0" />
+                                    <div className="px-4 sm:px-6 pb-6">
+                                        {managementKeys.length === 0 ? (
+                                            <p className="text-sm text-slate-400 italic">No management keys found.</p>
+                                        ) : (
+                                            <ul className="space-y-2">
+                                                {managementKeys.map((key, index) => (
+                                                    <li key={index} className="text-xs sm:text-sm font-mono text-cyan-300 bg-slate-800/50 rounded-lg p-3 flex items-start gap-3 border border-slate-700/50">
+                                                        <span className="shrink-0 text-emerald-400 text-base">✓</span>
+                                                        <span className="block flex-1 min-w-0 break-all whitespace-normal">{key.key}</span>
+                                                        {managementKeys.length > 1 && (
+                                                            <button
+                                                                disabled={removingKey === key.key && (keysLoading || isConfirming)}
+                                                                className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                                                                onClick={() => handleRemove(key.key as `0x{string}`)}
+                                                            >
+                                                                {removingKey === key.key && keysLoading && 'Confirming...'}
+                                                                {removingKey === key.key && !keysLoading && isConfirming && 'Confirmed'}
+                                                                {!(removingKey === key.key && (keysLoading || isConfirming)) && 'Remove'}
+                                                            </button>
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
                                     </div>
                                 </>
                             )}
