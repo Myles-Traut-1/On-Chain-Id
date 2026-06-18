@@ -119,6 +119,7 @@ export function useManageWallet(
       setPendingOp("link");
     } catch (err) {
       setLoading(false);
+      setPendingOp(null);
       handleError(err);
       throw err;
     }
@@ -154,6 +155,7 @@ export function useManageWallet(
       setPendingOp("unlink");
     } catch (err) {
       setLoading(false);
+      setPendingOp(null);
       handleError(err);
       throw err;
     }

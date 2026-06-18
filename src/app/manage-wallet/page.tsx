@@ -7,9 +7,10 @@ import { useIdentity } from "../../hooks/useIdentity";
 import { useGetIdentityDetails } from "../../hooks/useGetIdentityDetails";
 import { useManageWallet } from "../../hooks/useManageWallet";
 import { useManageKeys } from "../../hooks/useManageKeys";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
+import { useDelayedCallback } from "@/src/hooks/useDelayedCallback";
 
 
 export default function ManageWalletPage() {
@@ -23,12 +24,9 @@ export default function ManageWalletPage() {
 
     const [removingKey, setRemovingKey] = useState<string | null>(null);
 
-
-    const onLinked = useCallback(() => {
-        setTimeout(() => {
-            refetchWallets(identity);
-        }, 10000);    
-    }, [refetchWallets, identity]);
+    const onLinked = useDelayedCallback(() => {
+        refetchWallets(identity);
+    }, 10000);
 
     useManageWallet(onLinked, undefined);
 
@@ -36,7 +34,7 @@ export default function ManageWalletPage() {
         // Give wallet providers a brief window to restore session after refresh.
         const timeout = window.setTimeout(() => {
             setInitialConnectionWindowPassed(true);
-        }, 600);
+        }, 1000);
 
         return () => window.clearTimeout(timeout);
     }, []);
@@ -53,17 +51,13 @@ export default function ManageWalletPage() {
         }
     }, [initialConnectionWindowPassed, isConnecting, isReconnecting, status, verified, verifyLoading, router]);
 
-    const handleKeyAdded = useCallback(() => {
-        setTimeout(() => {
-            getManagementKeys();
-        }, 10000);
-    }, [getManagementKeys]);
+    const handleKeyAdded = useDelayedCallback(() => {
+        getManagementKeys();
+    }, 10000);
 
-    const handleKeyRemoved = useCallback(() => {
-        setTimeout(() => {
-            getManagementKeys();
-        }, 10000);
-    }, [getManagementKeys]);
+    const handleKeyRemoved = useDelayedCallback(() => {
+        getManagementKeys();
+    }, 10000);
 
     const handleRemove = async (keyToRemove: `0x{string}`) => {
         setRemovingKey(keyToRemove);
@@ -71,14 +65,8 @@ export default function ManageWalletPage() {
         
     };
 
-    const { loading: keysLoading, isConfirming, receipt, removeManagementKey } = useManageKeys(undefined, handleKeyRemoved);
+    const { loading: keysLoading, isConfirming, removeManagementKey } = useManageKeys(undefined, handleKeyRemoved);
 
-    useEffect(() => {
-        if(receipt === undefined) return;
-        console.log(receipt!.status);
-    }, [receipt]);
-
-    
     if (verifyLoading || !verified) {
         return (
             <div className="h-[calc(100vh-80px)] bg-slate-950 overflow-hidden flex items-center justify-center px-6">
