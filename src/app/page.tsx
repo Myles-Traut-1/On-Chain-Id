@@ -10,10 +10,11 @@ import { useIdentity } from "../hooks/useIdentity";
 import { addressZero } from "../constants/constants";
 import { useGetIdentityDetails } from "../hooks/useGetIdentityDetails";
 import {useManageWallet} from "../hooks/useManageWallet";
-import { useState, useEffect, useCallback } from "react";
+import { useDelayedCallback } from "../hooks/useDelayedCallback";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected} = useAccount();
   const { identity, linkedWallets, refetchWallets, loading, error, refetch } = useIdentity(address);
 
   const { verified, loading: verifiedLoading } = useGetIdentityDetails(address, identity);
@@ -23,15 +24,13 @@ export default function Home() {
 
   const [removingWallet, setRemovingWallet] = useState<string | null>(null);
 
-  const onUnlinked = useCallback(() => {
-    setTimeout(() => {
-        refetchWallets(identity);
-    }, 10000);    
-  }, [refetchWallets, identity]);
+  const onUnlinked = useDelayedCallback(() => {
+    refetchWallets(identity);
+  }, 10000);
 
-    const handleUnlinkWallet = (walletAddress: string) => {
-      setRemovingWallet(walletAddress);
-      unlinkWallet(walletAddress);
+  const handleUnlinkWallet = (walletAddress: string) => {
+    setRemovingWallet(walletAddress);
+    unlinkWallet(walletAddress);
   };
 
   const { unlinkWallet, loading: unlinkLoading, isConfirming } = useManageWallet(undefined, onUnlinked);
@@ -39,6 +38,7 @@ export default function Home() {
   useEffect(() => {
     if (error) {
       setDismissedError(false);
+      setRemovingWallet(null);
     }
   }, [error]);
 
@@ -210,7 +210,6 @@ export default function Home() {
                       </Link>
                     )}
 
-                     
                     {linkedWallets.length > 0 && (
                         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 flex flex-col">
                             <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
@@ -225,13 +224,13 @@ export default function Home() {
                                         </span>
                                         {wallet !== address && verified && (
                                             <button className="shrink-0 ml-2 px-2 py-1 text-xs rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
-                                                disabled={removingWallet === wallet && (unlinkLoading || isConfirming)}
-                                            onClick={() =>
-                                                    handleUnlinkWallet(wallet)
-                                                }>
-                                                 {wallet === removingWallet && unlinkLoading && 'Confirming...'}
-                                                {wallet === removingWallet && !unlinkLoading && isConfirming && 'Confirmed'}
-                                                {!(wallet === removingWallet && (unlinkLoading || isConfirming)) && 'Unlink'}
+                                              disabled={removingWallet === wallet && (unlinkLoading || isConfirming)}
+                                              onClick={() =>
+                                                handleUnlinkWallet(wallet)
+                                              }>
+                                              {wallet === removingWallet && unlinkLoading && 'Confirming...'}
+                                              {wallet === removingWallet && !unlinkLoading && isConfirming && 'Confirmed'}
+                                              {!(wallet === removingWallet && (unlinkLoading || isConfirming)) && 'Unlink'}
                                             </button>
                                         )}
                                     </li>
